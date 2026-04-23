@@ -1,0 +1,19 @@
+{
+  "mode": "transfer",
+  "source_model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "target_model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "source_adapter": "adapters/adapter_source_full",
+  "adapter_dir": "adapters/adapter_target_transfer_split050",
+  "train_output_dir": "outputs/target_transfer_split050_train",
+  "split_layer": 11,
+  "trainable_params": 1531904,
+  "total_params": 1103112192,
+  "trainable_ratio_pct": 0.13887109680317994,
+  "copied_late_params": 66,
+  "skipped_late_params": 0,
+  "train_loss": 2.0933523162656978e-07,
+  "global_step": 376,
+  "train_samples": 3000,
+  "max_len": 256,
+  "seed": 42
+}
