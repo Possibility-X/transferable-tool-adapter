@@ -1,0 +1,63 @@
+<svg width="900" height="420" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="white"></rect>
+
+  <!-- Title -->
+  <text x="450" y="30" text-anchor="middle" font-size="20" font-weight="bold">
+    Layerwise Decomposition and Transfer of Tool-Use
+  </text>
+
+  <!-- Input -->
+  <rect x="40" y="160" width="120" height="50" fill="#e3f2fd" stroke="#1e88e5"></rect>
+  <text x="100" y="190" text-anchor="middle" font-size="14">Input</text>
+
+  <!-- Early layers -->
+  <rect x="200" y="120" width="180" height="130" fill="#e8f5e9" stroke="#43a047"></rect>
+  <text x="290" y="145" text-anchor="middle" font-size="14" font-weight="bold">
+    Early Layers
+  </text>
+  <text x="290" y="165" text-anchor="middle" font-size="12">
+    Input Alignment
+  </text>
+
+  <!-- Late layers -->
+  <rect x="420" y="120" width="180" height="130" fill="#fff3e0" stroke="#fb8c00"></rect>
+  <text x="510" y="145" text-anchor="middle" font-size="14" font-weight="bold">
+    Late Layers
+  </text>
+  <text x="510" y="165" text-anchor="middle" font-size="12">
+    Tool Knowledge
+  </text>
+
+  <!-- Output -->
+  <rect x="650" y="160" width="180" height="50" fill="#fce4ec" stroke="#d81b60"></rect>
+  <text x="740" y="190" text-anchor="middle" font-size="14">
+    JSON Tool Call
+  </text>
+
+  <!-- Arrows -->
+  <line x1="160" y1="185" x2="200" y2="185" stroke="black" marker-end="url(#arrow)"></line>
+  <line x1="380" y1="185" x2="420" y2="185" stroke="black" marker-end="url(#arrow)"></line>
+  <line x1="600" y1="185" x2="650" y2="185" stroke="black" marker-end="url(#arrow)"></line>
+
+  <!-- Transfer arrow -->
+  <line x1="510" y1="270" x2="510" y2="350" stroke="#d32f2f" stroke-dasharray="6,4" marker-end="url(#arrow)"></line>
+  <text x="510" y="300" text-anchor="middle" font-size="12" fill="#d32f2f">
+    reuse + freeze
+  </text>
+
+  <!-- Target early -->
+  <rect x="200" y="320" width="180" height="60" fill="#e8f5e9" stroke="#43a047"></rect>
+  <text x="290" y="355" text-anchor="middle" font-size="12">
+    Train Early Layers
+  </text>
+
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="black"></path>
+    </marker>
+  </defs>
+
+</svg>
