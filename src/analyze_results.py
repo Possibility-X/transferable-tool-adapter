@@ -63,6 +63,13 @@ ROWS = [
         "summary": "qwen_projected_Aonly_train.json",
     },
     {
+        "setting": "Qwen Projected A-linear",
+        "route": "Route C projection v2",
+        "model": "Qwen2.5-0.5B",
+        "ood": "ood_qwen_projected_Alinear.json",
+        "summary": "qwen_projected_Alinear_train.json",
+    },
+    {
         "setting": "Transfer",
         "route": "Route B",
         "model": "TinyLlama",

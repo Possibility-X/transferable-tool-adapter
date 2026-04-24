@@ -4,7 +4,9 @@ import re
 from pathlib import Path
 
 import torch
+from torch import nn
 import torch.nn.functional as F
+from torch.nn.utils import parametrize
 from safetensors.torch import load_file
 from transformers import Trainer, TrainingArguments
 
@@ -34,14 +36,17 @@ DEFAULT_TARGET_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 DEFAULT_FULL_ADAPTER_DIR = "adapters/adapter_qwen_projected_full"
 DEFAULT_FREEZE_ADAPTER_DIR = "adapters/adapter_qwen_projected_freeze"
 DEFAULT_AONLY_ADAPTER_DIR = "adapters/adapter_qwen_projected_Aonly"
+DEFAULT_ALINEAR_ADAPTER_DIR = "adapters/adapter_qwen_projected_Alinear"
 
 DEFAULT_FULL_TRAIN_OUTPUT = "outputs/qwen_projected_full"
 DEFAULT_FREEZE_TRAIN_OUTPUT = "outputs/qwen_projected_freeze"
 DEFAULT_AONLY_TRAIN_OUTPUT = "outputs/qwen_projected_Aonly"
+DEFAULT_ALINEAR_TRAIN_OUTPUT = "outputs/qwen_projected_Alinear"
 
 DEFAULT_FULL_SUMMARY = "results/qwen_projected_full_train.json"
 DEFAULT_FREEZE_SUMMARY = "results/qwen_projected_freeze_train.json"
 DEFAULT_AONLY_SUMMARY = "results/qwen_projected_Aonly_train.json"
+DEFAULT_ALINEAR_SUMMARY = "results/qwen_projected_Alinear_train.json"
 
 LAYER_RE = re.compile(r"layers\.(\d+)")
 
@@ -67,6 +72,14 @@ def suffix_from_layer_name(name: str):
     return name[match.end():]
 
 
+def get_module_by_name(model, module_name: str):
+    modules = dict(model.named_modules())
+    module = modules.get(module_name)
+    if module is None:
+        raise ValueError(f"Module not found for parameter path: {module_name}")
+    return module
+
+
 def resize_tensor(src, target_shape):
     if tuple(src.shape) == tuple(target_shape):
         return src
@@ -84,6 +97,18 @@ def resize_tensor(src, target_shape):
         return y.squeeze(0).squeeze(0)
 
     raise ValueError(f"Unsupported tensor shape: {src.shape}")
+
+
+class LinearAProjection(nn.Module):
+    def __init__(self, source_weight: torch.Tensor, target_dim: int):
+        super().__init__()
+        self.register_buffer("source_weight", source_weight.float())
+        self.proj = nn.Linear(source_weight.shape[-1], target_dim, bias=False)
+
+    def forward(self, original):
+        source = self.source_weight.to(device=original.device, dtype=self.proj.weight.dtype)
+        projected = self.proj(source)
+        return projected.to(dtype=original.dtype)
 
 
 def load_source_lora_by_layer(source_adapter: str):
@@ -148,15 +173,18 @@ def build_layer_map(source_layers, target_layers, source_split_layer, target_spl
     return layer_map, source_late, target_late
 
 
-@torch.no_grad()
 def initialize_projected_late_layers(
     model,
     source_adapter: str,
     split_ratio: float,
     target_split_layer: int,
     projection_scope: str,
+    projection_mode: str,
     max_examples: int = 10,
 ):
+    if projection_mode == "linear" and projection_scope != "lora_A":
+        raise ValueError("--projection-mode linear is only supported with --projection-scope lora_A")
+
     source_by_layer, source_layers = load_source_lora_by_layer(source_adapter)
     target_layers = collect_target_lora_layers(model)
 
@@ -174,9 +202,12 @@ def initialize_projected_late_layers(
     missing = 0
     skipped = 0
     skipped_by_scope = 0
+    linear_projected = 0
+    linear_projection_params = 0
     examples = []
+    target_named_params = list(model.named_parameters())
 
-    for name, target_param in model.named_parameters():
+    for name, target_param in target_named_params:
         target_key = canonical_key(name)
         if "lora_" not in target_key or "layers." not in target_key:
             continue
@@ -199,13 +230,44 @@ def initialize_projected_late_layers(
             missing += 1
             continue
 
-        projected_tensor = resize_tensor(source_tensor, tuple(target_param.shape))
-        target_param.data.copy_(
-            projected_tensor.to(device=target_param.device, dtype=target_param.dtype)
-        )
+        if projection_mode == "linear" and "lora_A" in target_key:
+            if source_tensor.ndim != 2 or target_param.ndim != 2:
+                raise ValueError(
+                    f"Linear projection only supports 2D LoRA A tensors: {target_key}"
+                )
+
+            if source_tensor.shape[0] != target_param.shape[0]:
+                source_tensor = resize_tensor(
+                    source_tensor,
+                    (target_param.shape[0], source_tensor.shape[1]),
+                )
+
+            module_name = name.rsplit(".weight", 1)[0]
+            lora_a_module = get_module_by_name(model, module_name)
+            projection = LinearAProjection(
+                source_weight=source_tensor,
+                target_dim=target_param.shape[1],
+            ).to(device=target_param.device, dtype=target_param.dtype)
+
+            parametrize.register_parametrization(
+                lora_a_module,
+                "weight",
+                projection,
+            )
+            lora_a_module.parametrizations.weight.original.requires_grad = False
+            linear_projected += 1
+            linear_projection_params += projection.proj.weight.numel()
+        else:
+            with torch.no_grad():
+                projected_tensor = resize_tensor(source_tensor, tuple(target_param.shape))
+                target_param.data.copy_(
+                    projected_tensor.to(device=target_param.device, dtype=target_param.dtype)
+                )
 
         projected += 1
-        if tuple(source_tensor.shape) == tuple(target_param.shape):
+        if projection_mode == "linear":
+            resized += 1
+        elif tuple(source_tensor.shape) == tuple(target_param.shape):
             direct_shape += 1
         else:
             resized += 1
@@ -214,6 +276,7 @@ def initialize_projected_late_layers(
             examples.append(
                 {
                     "target": target_key,
+                    "projection_mode": projection_mode,
                     "source_layer": source_layer,
                     "target_layer": target_layer,
                     "source_shape": list(source_tensor.shape),
@@ -223,7 +286,7 @@ def initialize_projected_late_layers(
 
     target_late_params = sum(
         1
-        for name, _ in model.named_parameters()
+        for name, _ in target_named_params
         if "lora_" in canonical_key(name)
         and "layers." in canonical_key(name)
         and layer_id_from_name(canonical_key(name)) is not None
@@ -232,11 +295,15 @@ def initialize_projected_late_layers(
 
     report = {
         "projection_method": (
+            "linear_lora_A"
+            if projection_mode == "linear"
+            else
             "bilinear_resize_lora_A_only"
             if projection_scope == "lora_A"
             else "bilinear_resize"
         ),
         "projection_scope": projection_scope,
+        "projection_mode": projection_mode,
         "split_ratio": split_ratio,
         "source_split_layer": source_split_layer,
         "target_split_layer": target_split_layer,
@@ -250,6 +317,8 @@ def initialize_projected_late_layers(
         "missing_source_params": missing,
         "skipped_by_projection_scope": skipped_by_scope,
         "skipped_params": skipped,
+        "linear_projected_lora_A_params": linear_projected,
+        "linear_projection_trainable_params": linear_projection_params,
         "projection_examples": examples,
     }
 
@@ -258,19 +327,36 @@ def initialize_projected_late_layers(
     return report
 
 
+def materialize_parametrized_lora_A(model):
+    materialized = 0
+    for module in model.modules():
+        if parametrize.is_parametrized(module, "weight"):
+            parametrize.remove_parametrizations(
+                module,
+                "weight",
+                leave_parametrized=True,
+            )
+            materialized += 1
+    return materialized
+
+
 def resolve_outputs(
     mode: str,
     projection_scope: str,
+    projection_mode: str,
     adapter_dir: str,
     train_output_dir: str,
     summary_path: str,
 ):
     is_freeze = mode == "freeze_late"
-    is_aonly = mode == "full" and projection_scope == "lora_A"
+    is_aonly = mode == "full" and projection_scope == "lora_A" and projection_mode == "resize"
+    is_alinear = mode == "full" and projection_scope == "lora_A" and projection_mode == "linear"
     return (
         adapter_dir
         or (
-            DEFAULT_AONLY_ADAPTER_DIR
+            DEFAULT_ALINEAR_ADAPTER_DIR
+            if is_alinear
+            else DEFAULT_AONLY_ADAPTER_DIR
             if is_aonly
             else DEFAULT_FREEZE_ADAPTER_DIR
             if is_freeze
@@ -278,7 +364,9 @@ def resolve_outputs(
         ),
         train_output_dir
         or (
-            DEFAULT_AONLY_TRAIN_OUTPUT
+            DEFAULT_ALINEAR_TRAIN_OUTPUT
+            if is_alinear
+            else DEFAULT_AONLY_TRAIN_OUTPUT
             if is_aonly
             else DEFAULT_FREEZE_TRAIN_OUTPUT
             if is_freeze
@@ -286,7 +374,9 @@ def resolve_outputs(
         ),
         summary_path
         or (
-            DEFAULT_AONLY_SUMMARY
+            DEFAULT_ALINEAR_SUMMARY
+            if is_alinear
+            else DEFAULT_AONLY_SUMMARY
             if is_aonly
             else DEFAULT_FREEZE_SUMMARY
             if is_freeze
@@ -316,6 +406,13 @@ def main():
         default="all",
         help="all: resize/copy LoRA A and B; lora_A: resize/copy only LoRA A and keep B initialized by PEFT",
     )
+    parser.add_argument(
+        "--projection-mode",
+        type=str,
+        choices=["resize", "linear"],
+        default="resize",
+        help="resize: copy resized source weights; linear: train W so late LoRA A = W(A_source)",
+    )
     parser.add_argument("--train-samples", type=int, default=DEFAULT_TRAIN_SAMPLES)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--adapter-dir", type=str, default=None)
@@ -334,6 +431,7 @@ def main():
     adapter_dir, train_output_dir, summary_path = resolve_outputs(
         mode=args.mode,
         projection_scope=args.projection_scope,
+        projection_mode=args.projection_mode,
         adapter_dir=args.adapter_dir,
         train_output_dir=args.train_output_dir,
         summary_path=args.summary_path,
@@ -355,6 +453,7 @@ def main():
         split_ratio=args.split_ratio,
         target_split_layer=target_split_layer,
         projection_scope=args.projection_scope,
+        projection_mode=args.projection_mode,
     )
 
     if args.mode == "freeze_late":
@@ -393,6 +492,11 @@ def main():
 
     train_result = trainer.train()
 
+    materialized_projection_layers = 0
+    if args.projection_mode == "linear":
+        materialized_projection_layers = materialize_parametrized_lora_A(model)
+        print(f"Materialized parametrized LoRA A layers: {materialized_projection_layers}")
+
     model.save_pretrained(adapter_dir)
     tokenizer.save_pretrained(adapter_dir)
     print(f"\nSaved adapter to: {adapter_dir}")
@@ -403,6 +507,7 @@ def main():
         "target_model": args.target_model,
         "source_adapter": args.source_adapter,
         "projection_scope": args.projection_scope,
+        "projection_mode": args.projection_mode,
         "adapter_dir": adapter_dir,
         "train_output_dir": train_output_dir,
         "split_layer": target_split_layer,
@@ -416,6 +521,7 @@ def main():
         "seed": args.seed,
     }
     summary.update(projection_report)
+    summary["materialized_projection_layers"] = materialized_projection_layers
 
     write_summary(summary_path, summary)
 

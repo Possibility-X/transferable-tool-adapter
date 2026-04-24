@@ -8,6 +8,7 @@
 | Qwen Projected Full | Route C projection v0 | Qwen2.5-0.5B | - | 12 | 0.9800 | 1.0000 | 0.8138 |
 | Qwen Projected Freeze | Route C projection v0 | Qwen2.5-0.5B | - | 12 | 1.0000 | 1.0000 | 0.7325 |
 | Qwen Projected A-only | Route C projection v1 | Qwen2.5-0.5B | - | 12 | 0.9750 | 1.0000 | 0.8333 |
+| Qwen Projected A-linear | Route C projection v2 | Qwen2.5-0.5B | - | 12 | 0.9600 | 1.0000 | 0.8646 |
 | Transfer | Route B | TinyLlama | 0.50 | - | 1.0000 | 1.0000 | 0.7525 |
 | Split 0.25 | Route B ablation | TinyLlama | 0.25 | 5 | 1.0000 | 1.0000 | 0.7200 |
 | Split 0.50 | Route B ablation | TinyLlama | 0.50 | 11 | 1.0000 | 1.0000 | 0.7525 |

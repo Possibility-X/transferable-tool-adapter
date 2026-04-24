@@ -1,0 +1,7 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "adapter": "adapters/adapter_qwen_projected_Alinear",
+  "parsed": 0.96,
+  "tool_acc": 1.0,
+  "arg_acc": 0.8645833333333334
+}
