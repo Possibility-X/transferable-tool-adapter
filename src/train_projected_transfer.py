@@ -33,12 +33,15 @@ DEFAULT_TARGET_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 
 DEFAULT_FULL_ADAPTER_DIR = "adapters/adapter_qwen_projected_full"
 DEFAULT_FREEZE_ADAPTER_DIR = "adapters/adapter_qwen_projected_freeze"
+DEFAULT_AONLY_ADAPTER_DIR = "adapters/adapter_qwen_projected_Aonly"
 
 DEFAULT_FULL_TRAIN_OUTPUT = "outputs/qwen_projected_full"
 DEFAULT_FREEZE_TRAIN_OUTPUT = "outputs/qwen_projected_freeze"
+DEFAULT_AONLY_TRAIN_OUTPUT = "outputs/qwen_projected_Aonly"
 
 DEFAULT_FULL_SUMMARY = "results/qwen_projected_full_train.json"
 DEFAULT_FREEZE_SUMMARY = "results/qwen_projected_freeze_train.json"
+DEFAULT_AONLY_SUMMARY = "results/qwen_projected_Aonly_train.json"
 
 LAYER_RE = re.compile(r"layers\.(\d+)")
 
@@ -151,6 +154,7 @@ def initialize_projected_late_layers(
     source_adapter: str,
     split_ratio: float,
     target_split_layer: int,
+    projection_scope: str,
     max_examples: int = 10,
 ):
     source_by_layer, source_layers = load_source_lora_by_layer(source_adapter)
@@ -169,6 +173,7 @@ def initialize_projected_late_layers(
     direct_shape = 0
     missing = 0
     skipped = 0
+    skipped_by_scope = 0
     examples = []
 
     for name, target_param in model.named_parameters():
@@ -182,6 +187,10 @@ def initialize_projected_late_layers(
             skipped += 1
             continue
         if target_layer < target_split_layer:
+            continue
+
+        if projection_scope == "lora_A" and "lora_A" not in target_key:
+            skipped_by_scope += 1
             continue
 
         source_layer = layer_map[target_layer]
@@ -222,7 +231,12 @@ def initialize_projected_late_layers(
     )
 
     report = {
-        "projection_method": "bilinear_resize",
+        "projection_method": (
+            "bilinear_resize_lora_A_only"
+            if projection_scope == "lora_A"
+            else "bilinear_resize"
+        ),
+        "projection_scope": projection_scope,
         "split_ratio": split_ratio,
         "source_split_layer": source_split_layer,
         "target_split_layer": target_split_layer,
@@ -234,6 +248,7 @@ def initialize_projected_late_layers(
         "resized_late_params": resized,
         "direct_shape_late_params": direct_shape,
         "missing_source_params": missing,
+        "skipped_by_projection_scope": skipped_by_scope,
         "skipped_params": skipped,
         "projection_examples": examples,
     }
@@ -243,13 +258,40 @@ def initialize_projected_late_layers(
     return report
 
 
-def resolve_outputs(mode: str, adapter_dir: str, train_output_dir: str, summary_path: str):
+def resolve_outputs(
+    mode: str,
+    projection_scope: str,
+    adapter_dir: str,
+    train_output_dir: str,
+    summary_path: str,
+):
     is_freeze = mode == "freeze_late"
+    is_aonly = mode == "full" and projection_scope == "lora_A"
     return (
-        adapter_dir or (DEFAULT_FREEZE_ADAPTER_DIR if is_freeze else DEFAULT_FULL_ADAPTER_DIR),
+        adapter_dir
+        or (
+            DEFAULT_AONLY_ADAPTER_DIR
+            if is_aonly
+            else DEFAULT_FREEZE_ADAPTER_DIR
+            if is_freeze
+            else DEFAULT_FULL_ADAPTER_DIR
+        ),
         train_output_dir
-        or (DEFAULT_FREEZE_TRAIN_OUTPUT if is_freeze else DEFAULT_FULL_TRAIN_OUTPUT),
-        summary_path or (DEFAULT_FREEZE_SUMMARY if is_freeze else DEFAULT_FULL_SUMMARY),
+        or (
+            DEFAULT_AONLY_TRAIN_OUTPUT
+            if is_aonly
+            else DEFAULT_FREEZE_TRAIN_OUTPUT
+            if is_freeze
+            else DEFAULT_FULL_TRAIN_OUTPUT
+        ),
+        summary_path
+        or (
+            DEFAULT_AONLY_SUMMARY
+            if is_aonly
+            else DEFAULT_FREEZE_SUMMARY
+            if is_freeze
+            else DEFAULT_FULL_SUMMARY
+        ),
     )
 
 
@@ -267,6 +309,13 @@ def main():
     parser.add_argument("--source-adapter", type=str, default=DEFAULT_SOURCE_ADAPTER)
     parser.add_argument("--max-len", type=int, default=DEFAULT_MAX_LEN)
     parser.add_argument("--split-ratio", type=float, default=DEFAULT_SPLIT_RATIO)
+    parser.add_argument(
+        "--projection-scope",
+        type=str,
+        choices=["all", "lora_A"],
+        default="all",
+        help="all: resize/copy LoRA A and B; lora_A: resize/copy only LoRA A and keep B initialized by PEFT",
+    )
     parser.add_argument("--train-samples", type=int, default=DEFAULT_TRAIN_SAMPLES)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--adapter-dir", type=str, default=None)
@@ -284,6 +333,7 @@ def main():
 
     adapter_dir, train_output_dir, summary_path = resolve_outputs(
         mode=args.mode,
+        projection_scope=args.projection_scope,
         adapter_dir=args.adapter_dir,
         train_output_dir=args.train_output_dir,
         summary_path=args.summary_path,
@@ -304,6 +354,7 @@ def main():
         source_adapter=args.source_adapter,
         split_ratio=args.split_ratio,
         target_split_layer=target_split_layer,
+        projection_scope=args.projection_scope,
     )
 
     if args.mode == "freeze_late":
@@ -351,6 +402,7 @@ def main():
         "source_model": args.source_model,
         "target_model": args.target_model,
         "source_adapter": args.source_adapter,
+        "projection_scope": args.projection_scope,
         "adapter_dir": adapter_dir,
         "train_output_dir": train_output_dir,
         "split_layer": target_split_layer,

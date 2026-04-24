@@ -56,6 +56,13 @@ ROWS = [
         "summary": "qwen_projected_freeze_train.json",
     },
     {
+        "setting": "Qwen Projected A-only",
+        "route": "Route C projection v1",
+        "model": "Qwen2.5-0.5B",
+        "ood": "ood_qwen_projected_Aonly.json",
+        "summary": "qwen_projected_Aonly_train.json",
+    },
+    {
         "setting": "Transfer",
         "route": "Route B",
         "model": "TinyLlama",
