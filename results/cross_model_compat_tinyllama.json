@@ -1,0 +1,87 @@
+{
+  "source_model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "target_model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "source_adapter": "adapters/adapter_source_full",
+  "split_ratio": 0.5,
+  "split_layer": 11,
+  "source_late_or_all_lora_params": 132,
+  "target_late_lora_params": 66,
+  "directly_compatible_params": 66,
+  "missing_name_params": 0,
+  "shape_mismatch_params": 0,
+  "compatible_ratio": 1.0,
+  "copied_examples": [
+    {
+      "name": "model.layers.11.self_attn.q_proj.lora_A.weight",
+      "shape": [
+        16,
+        2048
+      ]
+    },
+    {
+      "name": "model.layers.11.self_attn.q_proj.lora_B.weight",
+      "shape": [
+        2048,
+        16
+      ]
+    },
+    {
+      "name": "model.layers.11.self_attn.k_proj.lora_A.weight",
+      "shape": [
+        16,
+        2048
+      ]
+    },
+    {
+      "name": "model.layers.11.self_attn.k_proj.lora_B.weight",
+      "shape": [
+        256,
+        16
+      ]
+    },
+    {
+      "name": "model.layers.11.self_attn.v_proj.lora_A.weight",
+      "shape": [
+        16,
+        2048
+      ]
+    },
+    {
+      "name": "model.layers.11.self_attn.v_proj.lora_B.weight",
+      "shape": [
+        256,
+        16
+      ]
+    },
+    {
+      "name": "model.layers.12.self_attn.q_proj.lora_A.weight",
+      "shape": [
+        16,
+        2048
+      ]
+    },
+    {
+      "name": "model.layers.12.self_attn.q_proj.lora_B.weight",
+      "shape": [
+        2048,
+        16
+      ]
+    },
+    {
+      "name": "model.layers.12.self_attn.k_proj.lora_A.weight",
+      "shape": [
+        16,
+        2048
+      ]
+    },
+    {
+      "name": "model.layers.12.self_attn.k_proj.lora_B.weight",
+      "shape": [
+        256,
+        16
+      ]
+    }
+  ],
+  "missing_examples": [],
+  "shape_mismatch_examples": []
+}

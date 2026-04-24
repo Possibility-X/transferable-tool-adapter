@@ -173,6 +173,12 @@ def main():
         help="Path to adapter",
     )
     parser.add_argument(
+        "--model",
+        type=str,
+        default=MODEL_NAME,
+        help="Base model name for the adapter",
+    )
+    parser.add_argument(
         "--save",
         type=str,
         default=None,
@@ -192,7 +198,7 @@ def main():
         tokenizer.pad_token = tokenizer.eos_token
 
     base_model = AutoModelForCausalLM.from_pretrained(
-        MODEL_NAME,
+        args.model,
         torch_dtype=torch.float32,
         device_map="auto",
     )
@@ -236,6 +242,8 @@ def main():
             print("Pred:", pred_json)
 
     result = {
+        "model": args.model,
+        "adapter": args.adapter,
         "parsed": parsed / EVAL_SAMPLES,
         "tool_acc": correct_tool / parsed if parsed else 0,
         "arg_acc": correct_args / parsed if parsed else 0,
