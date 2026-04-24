@@ -11,28 +11,47 @@ ROWS = [
     {
         "setting": "Source",
         "route": "Source adapter",
+        "model": "TinyLlama",
         "ood": "ood_source.json",
     },
     {
         "setting": "Full",
         "route": "Full target training",
+        "model": "TinyLlama",
         "ood": "ood_full.json",
     },
     {
         "setting": "Distill",
         "route": "Route A",
+        "model": "TinyLlama",
         "ood": "ood_distill.json",
         "summary": "distill_train_summary.json",
     },
     {
+        "setting": "Qwen Full",
+        "route": "Route C baseline",
+        "model": "Qwen2.5-0.5B",
+        "ood": "ood_qwen_full.json",
+        "summary": "qwen_full_train.json",
+    },
+    {
+        "setting": "Qwen Distill",
+        "route": "Route C baseline",
+        "model": "Qwen2.5-0.5B",
+        "ood": "ood_qwen_distill.json",
+        "summary": "qwen_distill_train.json",
+    },
+    {
         "setting": "Transfer",
         "route": "Route B",
+        "model": "TinyLlama",
         "split_ratio": "0.50",
         "ood": "ood_transfer.json",
     },
     {
         "setting": "Split 0.25",
         "route": "Route B ablation",
+        "model": "TinyLlama",
         "split_ratio": "0.25",
         "ood": "ood_split025.json",
         "summary": "train_split025_summary.json",
@@ -40,6 +59,7 @@ ROWS = [
     {
         "setting": "Split 0.50",
         "route": "Route B ablation",
+        "model": "TinyLlama",
         "split_ratio": "0.50",
         "ood": "ood_split050.json",
         "summary": "train_split050_summary.json",
@@ -47,6 +67,7 @@ ROWS = [
     {
         "setting": "Split 0.75",
         "route": "Route B ablation",
+        "model": "TinyLlama",
         "split_ratio": "0.75",
         "ood": "ood_split075.json",
         "summary": "train_split075_summary.json",
@@ -79,6 +100,7 @@ def build_rows(results_dir: Path):
             {
                 "Setting": spec["setting"],
                 "Route": spec["route"],
+                "Model": spec["model"],
                 "Split Ratio": spec.get("split_ratio", "-"),
                 "Split Layer": summary.get("split_layer") if summary else None,
                 "Parsed": ood.get("parsed") if ood else None,
@@ -93,6 +115,7 @@ def to_markdown(rows):
     headers = [
         "Setting",
         "Route",
+        "Model",
         "Split Ratio",
         "Split Layer",
         "Parsed",

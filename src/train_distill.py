@@ -276,7 +276,13 @@ def main():
     parser.add_argument("--target-model", type=str, default=DEFAULT_MODEL)
     parser.add_argument("--teacher-adapter", type=str, default=DEFAULT_TEACHER_ADAPTER)
     parser.add_argument("--adapter-dir", type=str, default=DEFAULT_ADAPTER_DIR)
-    parser.add_argument("--train-output-dir", type=str, default=DEFAULT_TRAIN_OUTPUT_DIR)
+    parser.add_argument(
+        "--train-output-dir",
+        "--output-dir",
+        dest="train_output_dir",
+        type=str,
+        default=DEFAULT_TRAIN_OUTPUT_DIR,
+    )
     parser.add_argument("--pseudo-path", type=str, default=DEFAULT_PSEUDO_PATH)
     parser.add_argument("--summary-path", type=str, default=DEFAULT_SUMMARY_PATH)
     parser.add_argument("--max-len", type=int, default=DEFAULT_MAX_LEN)

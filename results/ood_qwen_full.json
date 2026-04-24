@@ -1,0 +1,7 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "adapter": "adapters/adapter_qwen_full",
+  "parsed": 0.985,
+  "tool_acc": 1.0,
+  "arg_acc": 0.817258883248731
+}
