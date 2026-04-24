@@ -42,6 +42,20 @@ ROWS = [
         "summary": "qwen_distill_train.json",
     },
     {
+        "setting": "Qwen Projected Full",
+        "route": "Route C projection v0",
+        "model": "Qwen2.5-0.5B",
+        "ood": "ood_qwen_projected_full.json",
+        "summary": "qwen_projected_full_train.json",
+    },
+    {
+        "setting": "Qwen Projected Freeze",
+        "route": "Route C projection v0",
+        "model": "Qwen2.5-0.5B",
+        "ood": "ood_qwen_projected_freeze.json",
+        "summary": "qwen_projected_freeze_train.json",
+    },
+    {
         "setting": "Transfer",
         "route": "Route B",
         "model": "TinyLlama",
