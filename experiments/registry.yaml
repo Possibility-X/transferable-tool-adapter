@@ -91,6 +91,24 @@ experiments:
         verbose-examples: 2
         save: results/ood_toolbench_qwen_distill.json
 
+  - id: toolbench_qwen_nonparam
+    dataset: toolbench
+    method: nonparametric_prompt
+    model: qwen2.5-0.5b
+    machine: 3060
+    priority: high
+    tags: [toolbench, qwen, nonparametric, baseline]
+    eval:
+      script: src/eval_nonparam.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 512
+        max-new-tokens: 96
+        verbose-examples: 2
+        use-chat-template: true
+        save: results/ood_toolbench_qwen_nonparam.json
+
   - id: toolbench_qwen_projected_Alinear
     dataset: toolbench
     method: projection_Alinear
