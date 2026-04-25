@@ -109,6 +109,26 @@ experiments:
         use-chat-template: true
         save: results/ood_toolbench_qwen_nonparam.json
 
+  - id: toolbench_qwen_hybrid_Alinear
+    dataset: toolbench
+    method: hybrid_prompt_Alinear
+    model: qwen2.5-0.5b
+    source_model: tinyllama
+    machine: 3060
+    priority: high
+    tags: [toolbench, qwen, hybrid, projection, v2]
+    eval:
+      script: src/eval_nonparam.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_toolbench_qwen_projected_Alinear
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 512
+        max-new-tokens: 96
+        verbose-examples: 2
+        use-chat-template: true
+        save: results/ood_toolbench_qwen_hybrid_Alinear.json
+
   - id: toolbench_qwen_projected_Alinear
     dataset: toolbench
     method: projection_Alinear

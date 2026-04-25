@@ -2,6 +2,7 @@ import argparse
 import json
 
 import torch
+from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from eval_ood import extract_first_balanced_json, is_valid_schema
@@ -137,6 +138,7 @@ def evaluate(
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default=DEFAULT_MODEL)
+    parser.add_argument("--adapter", type=str, default=None)
     parser.add_argument("--dataset-path", type=str, default=DEFAULT_DATASET_PATH)
     parser.add_argument("--max-samples", type=int, default=None)
     parser.add_argument("--max-input-tokens", type=int, default=512)
@@ -150,15 +152,17 @@ def main():
     torch.manual_seed(args.seed)
     records = load_jsonl_records(args.dataset_path, limit=args.max_samples)
 
-    tokenizer = AutoTokenizer.from_pretrained(args.model)
+    tokenizer_path = args.adapter or args.model
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    model = AutoModelForCausalLM.from_pretrained(
+    base_model = AutoModelForCausalLM.from_pretrained(
         args.model,
         dtype=torch.float32,
         device_map="auto",
     )
+    model = PeftModel.from_pretrained(base_model, args.adapter) if args.adapter else base_model
 
     result = evaluate(
         model=model,
@@ -172,8 +176,8 @@ def main():
     result.update(
         {
             "model": args.model,
-            "adapter": None,
-            "method": "nonparametric_prompt",
+            "adapter": args.adapter,
+            "method": "hybrid_prompt_adapter" if args.adapter else "nonparametric_prompt",
             "prompt_style": (
                 "toolbench_schema_json_chat_tail_constraint"
                 if args.use_chat_template
@@ -184,7 +188,8 @@ def main():
         }
     )
 
-    print("\n=== Non-parametric ToolBench Evaluation ===")
+    title = "Hybrid ToolBench Evaluation" if args.adapter else "Non-parametric ToolBench Evaluation"
+    print(f"\n=== {title} ===")
     print(result)
 
     if args.save:
