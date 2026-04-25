@@ -1,0 +1,137 @@
+experiments:
+  - id: toolbench_source_tiny
+    dataset: toolbench
+    method: source
+    model: tinyllama
+    machine: 3060
+    priority: high
+    tags: [toolbench, source]
+    train:
+      script: src/train_source.py
+      args:
+        model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+        dataset-path: data/toolbench_train.jsonl
+        max-len: 512
+        train-samples: 3000
+        adapter-dir: adapters/adapter_toolbench_source
+        output-dir: outputs/toolbench_source
+        summary-path: results/toolbench_source_train.json
+        results-path: results/toolbench_source_in_domain.json
+        skip-eval: true
+    eval:
+      script: src/eval_toolbench.py
+      args:
+        model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+        adapter: adapters/adapter_toolbench_source
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 512
+        max-new-tokens: 96
+        verbose-examples: 2
+        save: results/ood_toolbench_source.json
+
+  - id: toolbench_qwen_full
+    dataset: toolbench
+    method: full
+    model: qwen2.5-0.5b
+    machine: 3060
+    priority: high
+    tags: [toolbench, qwen, baseline]
+    train:
+      script: src/train_transfer.py
+      args:
+        mode: full
+        target-model: Qwen/Qwen2.5-0.5B-Instruct
+        dataset-path: data/toolbench_train.jsonl
+        max-len: 512
+        train-samples: 3000
+        adapter-dir: adapters/adapter_toolbench_qwen_full
+        train-output-dir: outputs/toolbench_qwen_full
+        summary-path: results/toolbench_qwen_full_train.json
+    eval:
+      script: src/eval_toolbench.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_toolbench_qwen_full
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 512
+        max-new-tokens: 96
+        verbose-examples: 2
+        save: results/ood_toolbench_qwen_full.json
+
+  - id: toolbench_qwen_distill
+    dataset: toolbench
+    method: distill
+    model: qwen2.5-0.5b
+    teacher: tinyllama
+    machine: 3060
+    priority: high
+    tags: [toolbench, qwen, distill]
+    train:
+      script: src/train_distill.py
+      args:
+        teacher-model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+        target-model: Qwen/Qwen2.5-0.5B-Instruct
+        teacher-adapter: adapters/adapter_toolbench_source
+        dataset-path: data/toolbench_train.jsonl
+        max-len: 512
+        train-samples: 3000
+        teacher-batch-size: 4
+        adapter-dir: adapters/adapter_toolbench_qwen_distill
+        train-output-dir: outputs/toolbench_qwen_distill
+        pseudo-path: outputs/toolbench_qwen_distill_pseudo.jsonl
+        summary-path: results/toolbench_qwen_distill_train.json
+    eval:
+      script: src/eval_toolbench.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_toolbench_qwen_distill
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 512
+        max-new-tokens: 96
+        verbose-examples: 2
+        save: results/ood_toolbench_qwen_distill.json
+
+  - id: toolbench_qwen_projected_Alinear
+    dataset: toolbench
+    method: projection_Alinear
+    model: qwen2.5-0.5b
+    source_model: tinyllama
+    machine: 5060
+    priority: high
+    tags: [toolbench, qwen, projection, v2]
+    train:
+      script: src/train_projected_transfer.py
+      args:
+        source-model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+        target-model: Qwen/Qwen2.5-0.5B-Instruct
+        source-adapter: adapters/adapter_toolbench_source
+        dataset-path: data/toolbench_train.jsonl
+        max-len: 512
+        train-samples: 3000
+        projection-scope: lora_A
+        projection-mode: linear
+        mode: full
+        adapter-dir: adapters/adapter_toolbench_qwen_projected_Alinear
+        train-output-dir: outputs/toolbench_qwen_projected_Alinear
+        summary-path: results/toolbench_qwen_projected_Alinear_train.json
+    eval:
+      script: src/eval_toolbench.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_toolbench_qwen_projected_Alinear
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 512
+        max-new-tokens: 96
+        verbose-examples: 2
+        save: results/ood_toolbench_qwen_projected_Alinear.json
+
+  - id: toolbench_qwen_projected_Amlp
+    dataset: toolbench
+    method: projection_Amlp
+    model: qwen2.5-0.5b
+    source_model: tinyllama
+    machine: 5060
+    priority: medium
+    status: planned
+    tags: [toolbench, qwen, projection, v3]
+    notes: Requires implementation of projection-mode mlp in src/train_projected_transfer.py.

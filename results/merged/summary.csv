@@ -1,0 +1,6 @@
+id,dataset,method,model,source_model,machine,priority,status,samples,parsed,tool_acc,arg_acc,max_input_tokens,train_samples,max_len,train_loss,global_step,eval_path,summary_path
+toolbench_source_tiny,toolbench,source,tinyllama,,3060,high,done,314,0.9872611464968153,0.2,0.5594162826420891,512,3000,512,0.676964171389316,188,results/ood_toolbench_source.json,results/toolbench_source_train.json
+toolbench_qwen_full,toolbench,full,qwen2.5-0.5b,,3060,high,done,314,1.0,0.1624203821656051,0.5424628450106157,512,3000,512,0.9075032751610939,376,results/ood_toolbench_qwen_full.json,results/toolbench_qwen_full_train.json
+toolbench_qwen_distill,toolbench,distill,qwen2.5-0.5b,tinyllama,3060,high,done,314,1.0,0.1751592356687898,0.5408704883227176,512,3000,512,0.24244978052846503,356,results/ood_toolbench_qwen_distill.json,results/toolbench_qwen_distill_train.json
+toolbench_qwen_projected_Alinear,toolbench,projection_Alinear,qwen2.5-0.5b,tinyllama,5060,high,done,314,0.9936305732484076,0.1762820512820513,0.5494123931623932,512,3000,512,0.8608176048765791,376,results/ood_toolbench_qwen_projected_Alinear.json,results/toolbench_qwen_projected_Alinear_train.json
+toolbench_qwen_projected_Amlp,toolbench,projection_Amlp,qwen2.5-0.5b,tinyllama,5060,medium,planned,,,,,,,,,,,
