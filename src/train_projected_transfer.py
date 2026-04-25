@@ -37,16 +37,19 @@ DEFAULT_FULL_ADAPTER_DIR = "adapters/adapter_qwen_projected_full"
 DEFAULT_FREEZE_ADAPTER_DIR = "adapters/adapter_qwen_projected_freeze"
 DEFAULT_AONLY_ADAPTER_DIR = "adapters/adapter_qwen_projected_Aonly"
 DEFAULT_ALINEAR_ADAPTER_DIR = "adapters/adapter_qwen_projected_Alinear"
+DEFAULT_AMLP_ADAPTER_DIR = "adapters/adapter_qwen_projected_Amlp"
 
 DEFAULT_FULL_TRAIN_OUTPUT = "outputs/qwen_projected_full"
 DEFAULT_FREEZE_TRAIN_OUTPUT = "outputs/qwen_projected_freeze"
 DEFAULT_AONLY_TRAIN_OUTPUT = "outputs/qwen_projected_Aonly"
 DEFAULT_ALINEAR_TRAIN_OUTPUT = "outputs/qwen_projected_Alinear"
+DEFAULT_AMLP_TRAIN_OUTPUT = "outputs/qwen_projected_Amlp"
 
 DEFAULT_FULL_SUMMARY = "results/qwen_projected_full_train.json"
 DEFAULT_FREEZE_SUMMARY = "results/qwen_projected_freeze_train.json"
 DEFAULT_AONLY_SUMMARY = "results/qwen_projected_Aonly_train.json"
 DEFAULT_ALINEAR_SUMMARY = "results/qwen_projected_Alinear_train.json"
+DEFAULT_AMLP_SUMMARY = "results/qwen_projected_Amlp_train.json"
 
 LAYER_RE = re.compile(r"layers\.(\d+)")
 
@@ -109,6 +112,36 @@ class LinearAProjection(nn.Module):
         source = self.source_weight.to(device=original.device, dtype=self.proj.weight.dtype)
         projected = self.proj(source)
         return projected.to(dtype=original.dtype)
+
+
+class MLPAProjection(nn.Module):
+    def __init__(
+        self,
+        source_weight: torch.Tensor,
+        target_dim: int,
+        hidden_dim: int | None = None,
+    ):
+        super().__init__()
+        self.register_buffer("source_weight", source_weight.float())
+        hidden_dim = hidden_dim or target_dim
+        self.net = nn.Sequential(
+            nn.Linear(source_weight.shape[-1], hidden_dim, bias=False),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, target_dim, bias=False),
+        )
+
+    def forward(self, original):
+        first_layer = self.net[0]
+        source = self.source_weight.to(
+            device=original.device,
+            dtype=first_layer.weight.dtype,
+        )
+        projected = self.net(source)
+        return projected.to(dtype=original.dtype)
+
+
+def count_trainable_params(module: nn.Module):
+    return sum(param.numel() for param in module.parameters() if param.requires_grad)
 
 
 def load_source_lora_by_layer(source_adapter: str):
@@ -180,10 +213,14 @@ def initialize_projected_late_layers(
     target_split_layer: int,
     projection_scope: str,
     projection_mode: str,
+    projection_hidden_dim: int | None = None,
     max_examples: int = 10,
 ):
-    if projection_mode == "linear" and projection_scope != "lora_A":
-        raise ValueError("--projection-mode linear is only supported with --projection-scope lora_A")
+    learned_projection_modes = {"linear", "mlp"}
+    if projection_mode in learned_projection_modes and projection_scope != "lora_A":
+        raise ValueError(
+            f"--projection-mode {projection_mode} is only supported with --projection-scope lora_A"
+        )
 
     source_by_layer, source_layers = load_source_lora_by_layer(source_adapter)
     target_layers = collect_target_lora_layers(model)
@@ -204,6 +241,10 @@ def initialize_projected_late_layers(
     skipped_by_scope = 0
     linear_projected = 0
     linear_projection_params = 0
+    mlp_projected = 0
+    mlp_projection_params = 0
+    learned_projected = 0
+    learned_projection_params = 0
     examples = []
     target_named_params = list(model.named_parameters())
 
@@ -230,10 +271,10 @@ def initialize_projected_late_layers(
             missing += 1
             continue
 
-        if projection_mode == "linear" and "lora_A" in target_key:
+        if projection_mode in learned_projection_modes and "lora_A" in target_key:
             if source_tensor.ndim != 2 or target_param.ndim != 2:
                 raise ValueError(
-                    f"Linear projection only supports 2D LoRA A tensors: {target_key}"
+                    f"{projection_mode} projection only supports 2D LoRA A tensors: {target_key}"
                 )
 
             if source_tensor.shape[0] != target_param.shape[0]:
@@ -244,10 +285,23 @@ def initialize_projected_late_layers(
 
             module_name = name.rsplit(".weight", 1)[0]
             lora_a_module = get_module_by_name(model, module_name)
-            projection = LinearAProjection(
-                source_weight=source_tensor,
-                target_dim=target_param.shape[1],
-            ).to(device=target_param.device, dtype=target_param.dtype)
+            if projection_mode == "linear":
+                projection = LinearAProjection(
+                    source_weight=source_tensor,
+                    target_dim=target_param.shape[1],
+                )
+                linear_projected += 1
+                linear_projection_params += count_trainable_params(projection)
+            else:
+                projection = MLPAProjection(
+                    source_weight=source_tensor,
+                    target_dim=target_param.shape[1],
+                    hidden_dim=projection_hidden_dim,
+                )
+                mlp_projected += 1
+                mlp_projection_params += count_trainable_params(projection)
+
+            projection = projection.to(device=target_param.device, dtype=target_param.dtype)
 
             parametrize.register_parametrization(
                 lora_a_module,
@@ -255,8 +309,8 @@ def initialize_projected_late_layers(
                 projection,
             )
             lora_a_module.parametrizations.weight.original.requires_grad = False
-            linear_projected += 1
-            linear_projection_params += projection.proj.weight.numel()
+            learned_projected += 1
+            learned_projection_params += count_trainable_params(projection)
         else:
             with torch.no_grad():
                 projected_tensor = resize_tensor(source_tensor, tuple(target_param.shape))
@@ -265,7 +319,7 @@ def initialize_projected_late_layers(
                 )
 
         projected += 1
-        if projection_mode == "linear":
+        if projection_mode in learned_projection_modes:
             resized += 1
         elif tuple(source_tensor.shape) == tuple(target_param.shape):
             direct_shape += 1
@@ -298,6 +352,9 @@ def initialize_projected_late_layers(
             "linear_lora_A"
             if projection_mode == "linear"
             else
+            "mlp_lora_A"
+            if projection_mode == "mlp"
+            else
             "bilinear_resize_lora_A_only"
             if projection_scope == "lora_A"
             else "bilinear_resize"
@@ -317,8 +374,13 @@ def initialize_projected_late_layers(
         "missing_source_params": missing,
         "skipped_by_projection_scope": skipped_by_scope,
         "skipped_params": skipped,
+        "projection_hidden_dim": projection_hidden_dim,
+        "learned_projected_lora_A_params": learned_projected,
+        "learned_projection_trainable_params": learned_projection_params,
         "linear_projected_lora_A_params": linear_projected,
         "linear_projection_trainable_params": linear_projection_params,
+        "mlp_projected_lora_A_params": mlp_projected,
+        "mlp_projection_trainable_params": mlp_projection_params,
         "projection_examples": examples,
     }
 
@@ -351,10 +413,13 @@ def resolve_outputs(
     is_freeze = mode == "freeze_late"
     is_aonly = mode == "full" and projection_scope == "lora_A" and projection_mode == "resize"
     is_alinear = mode == "full" and projection_scope == "lora_A" and projection_mode == "linear"
+    is_amlp = mode == "full" and projection_scope == "lora_A" and projection_mode == "mlp"
     return (
         adapter_dir
         or (
-            DEFAULT_ALINEAR_ADAPTER_DIR
+            DEFAULT_AMLP_ADAPTER_DIR
+            if is_amlp
+            else DEFAULT_ALINEAR_ADAPTER_DIR
             if is_alinear
             else DEFAULT_AONLY_ADAPTER_DIR
             if is_aonly
@@ -364,7 +429,9 @@ def resolve_outputs(
         ),
         train_output_dir
         or (
-            DEFAULT_ALINEAR_TRAIN_OUTPUT
+            DEFAULT_AMLP_TRAIN_OUTPUT
+            if is_amlp
+            else DEFAULT_ALINEAR_TRAIN_OUTPUT
             if is_alinear
             else DEFAULT_AONLY_TRAIN_OUTPUT
             if is_aonly
@@ -374,7 +441,9 @@ def resolve_outputs(
         ),
         summary_path
         or (
-            DEFAULT_ALINEAR_SUMMARY
+            DEFAULT_AMLP_SUMMARY
+            if is_amlp
+            else DEFAULT_ALINEAR_SUMMARY
             if is_alinear
             else DEFAULT_AONLY_SUMMARY
             if is_aonly
@@ -409,9 +478,19 @@ def main():
     parser.add_argument(
         "--projection-mode",
         type=str,
-        choices=["resize", "linear"],
+        choices=["resize", "linear", "mlp"],
         default="resize",
-        help="resize: copy resized source weights; linear: train W so late LoRA A = W(A_source)",
+        help=(
+            "resize: copy resized source weights; "
+            "linear: train W so late LoRA A = W(A_source); "
+            "mlp: train a two-layer MLP for late LoRA A alignment"
+        ),
+    )
+    parser.add_argument(
+        "--projection-hidden-dim",
+        type=int,
+        default=None,
+        help="Hidden size for --projection-mode mlp; defaults to each target LoRA A input dim.",
     )
     parser.add_argument("--train-samples", type=int, default=DEFAULT_TRAIN_SAMPLES)
     parser.add_argument(
@@ -460,6 +539,7 @@ def main():
         target_split_layer=target_split_layer,
         projection_scope=args.projection_scope,
         projection_mode=args.projection_mode,
+        projection_hidden_dim=args.projection_hidden_dim,
     )
 
     if args.mode == "freeze_late":
@@ -501,7 +581,7 @@ def main():
     train_result = trainer.train()
 
     materialized_projection_layers = 0
-    if args.projection_mode == "linear":
+    if args.projection_mode in {"linear", "mlp"}:
         materialized_projection_layers = materialize_parametrized_lora_A(model)
         print(f"Materialized parametrized LoRA A layers: {materialized_projection_layers}")
 
@@ -516,6 +596,7 @@ def main():
         "source_adapter": args.source_adapter,
         "projection_scope": args.projection_scope,
         "projection_mode": args.projection_mode,
+        "projection_hidden_dim": args.projection_hidden_dim,
         "adapter_dir": adapter_dir,
         "train_output_dir": train_output_dir,
         "split_layer": target_split_layer,

@@ -96,7 +96,7 @@ experiments:
     method: projection_Alinear
     model: qwen2.5-0.5b
     source_model: tinyllama
-    machine: 5060
+    machine: 3060
     priority: high
     tags: [toolbench, qwen, projection, v2]
     train:
@@ -130,8 +130,31 @@ experiments:
     method: projection_Amlp
     model: qwen2.5-0.5b
     source_model: tinyllama
-    machine: 5060
+    machine: 3060
     priority: medium
-    status: planned
     tags: [toolbench, qwen, projection, v3]
-    notes: Requires implementation of projection-mode mlp in src/train_projected_transfer.py.
+    train:
+      script: src/train_projected_transfer.py
+      args:
+        source-model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+        target-model: Qwen/Qwen2.5-0.5B-Instruct
+        source-adapter: adapters/adapter_toolbench_source
+        dataset-path: data/toolbench_train.jsonl
+        max-len: 512
+        train-samples: 3000
+        projection-scope: lora_A
+        projection-mode: mlp
+        mode: full
+        adapter-dir: adapters/adapter_toolbench_qwen_projected_Amlp
+        train-output-dir: outputs/toolbench_qwen_projected_Amlp
+        summary-path: results/toolbench_qwen_projected_Amlp_train.json
+    eval:
+      script: src/eval_toolbench.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_toolbench_qwen_projected_Amlp
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 512
+        max-new-tokens: 96
+        verbose-examples: 2
+        save: results/ood_toolbench_qwen_projected_Amlp.json
