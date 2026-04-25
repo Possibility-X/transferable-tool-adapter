@@ -12,6 +12,10 @@ from transformers import (
     TrainingArguments,
 )
 from peft import LoraConfig, get_peft_model, PeftModel
+from tool_data import (
+    build_training_dataset_from_records,
+    load_jsonl_records,
+)
 
 
 # =========================
@@ -255,7 +259,16 @@ def build_lora_model(model_name: str):
     return model
 
 
-def build_training_dataset(tokenizer, train_samples: int, max_len: int):
+def build_training_dataset(tokenizer, train_samples: int, max_len: int, dataset_path: str | None = None, seed: int | None = None):
+    if dataset_path:
+        records = load_jsonl_records(dataset_path, limit=train_samples, seed=seed)
+        return build_training_dataset_from_records(
+            records=records,
+            tokenizer=tokenizer,
+            max_len=max_len,
+            fewshot=FEWSHOT,
+        )
+
     dataset = build_dataset(train_samples)
 
     def tokenize(example):
@@ -336,6 +349,12 @@ def main():
     parser.add_argument("--max-len", type=int, default=DEFAULT_MAX_LEN)
     parser.add_argument("--split-ratio", type=float, default=DEFAULT_SPLIT_RATIO)
     parser.add_argument("--train-samples", type=int, default=DEFAULT_TRAIN_SAMPLES)
+    parser.add_argument(
+        "--dataset-path",
+        type=str,
+        default=None,
+        help="Optional JSONL records with instruction and gt/tool/arguments fields.",
+    )
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
 
     parser.add_argument("--adapter-dir", type=str, default=None)
@@ -391,6 +410,8 @@ def main():
         tokenizer=tokenizer,
         train_samples=args.train_samples,
         max_len=args.max_len,
+        dataset_path=args.dataset_path,
+        seed=args.seed,
     )
 
     training_args = TrainingArguments(
@@ -434,6 +455,7 @@ def main():
         "train_loss": float(train_result.training_loss),
         "global_step": int(train_result.global_step),
         "train_samples": args.train_samples,
+        "dataset_path": args.dataset_path,
         "max_len": args.max_len,
         "seed": args.seed,
     }

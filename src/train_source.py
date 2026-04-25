@@ -11,7 +11,9 @@ from transformers import (
     Trainer,
     TrainingArguments,
 )
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, PeftModel, get_peft_model
+
+from tool_data import build_training_dataset_from_records, load_jsonl_records
 
 
 # =========================
@@ -22,11 +24,13 @@ DEFAULT_MODEL_NAME = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 DEFAULT_MAX_LEN = 256
 DEFAULT_TRAIN_SAMPLES = 3000
 DEFAULT_EVAL_SAMPLES = 100
+DEFAULT_NUM_TRAIN_EPOCHS = 2.0
 DEFAULT_SEED = 42
 
 DEFAULT_OUTPUT_DIR = "outputs/source_train"
 DEFAULT_ADAPTER_DIR = "adapters/adapter_source_full"
 DEFAULT_RESULTS_PATH = "results/source_in_domain.json"
+DEFAULT_SUMMARY_PATH = "results/source_train_summary.json"
 
 
 # =========================
@@ -256,10 +260,25 @@ def main():
     parser.add_argument("--max-len", type=int, default=DEFAULT_MAX_LEN)
     parser.add_argument("--train-samples", type=int, default=DEFAULT_TRAIN_SAMPLES)
     parser.add_argument("--eval-samples", type=int, default=DEFAULT_EVAL_SAMPLES)
+    parser.add_argument("--num-train-epochs", type=float, default=DEFAULT_NUM_TRAIN_EPOCHS)
+    parser.add_argument(
+        "--dataset-path",
+        type=str,
+        default=None,
+        help="Optional JSONL records with instruction and gt/tool/arguments fields.",
+    )
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--output-dir", type=str, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--adapter-dir", type=str, default=DEFAULT_ADAPTER_DIR)
     parser.add_argument("--results-path", type=str, default=DEFAULT_RESULTS_PATH)
+    parser.add_argument("--summary-path", type=str, default=DEFAULT_SUMMARY_PATH)
+    parser.add_argument(
+        "--init-adapter",
+        type=str,
+        default=None,
+        help="Optional PEFT adapter checkpoint used to initialize trainable LoRA weights.",
+    )
+    parser.add_argument("--resume-from-checkpoint", type=str, default=None)
     parser.add_argument("--skip-eval", action="store_true")
     args = parser.parse_args()
 
@@ -292,62 +311,78 @@ def main():
         task_type="CAUSAL_LM",
     )
 
-    model = get_peft_model(model, lora_config)
+    if args.init_adapter:
+        model = PeftModel.from_pretrained(model, args.init_adapter, is_trainable=True)
+    else:
+        model = get_peft_model(model, lora_config)
 
-    dataset = build_dataset(args.train_samples)
-
-    def tokenize(example):
-        full_text = example["text"]
-
-        split_marker = "Assistant:\nTOOL_CALL:\n"
-        split_idx = full_text.rfind(split_marker)
-        if split_idx == -1:
-            raise ValueError("split marker not found in training text")
-
-        prompt_text = full_text[: split_idx + len(split_marker)]
-
-        full_enc = tokenizer(
-            full_text,
-            truncation=True,
-            padding="max_length",
-            max_length=args.max_len,
+    if args.dataset_path:
+        records = load_jsonl_records(
+            args.dataset_path,
+            limit=args.train_samples,
+            seed=args.seed,
         )
-        prompt_enc = tokenizer(
-            prompt_text,
-            truncation=True,
-            padding=False,
-            max_length=args.max_len,
+        dataset = build_training_dataset_from_records(
+            records,
+            tokenizer=tokenizer,
+            max_len=args.max_len,
+            fewshot=FEWSHOT,
         )
+    else:
+        dataset = build_dataset(args.train_samples)
 
-        input_ids = full_enc["input_ids"]
-        attention_mask = full_enc["attention_mask"]
-        labels = input_ids.copy()
+        def tokenize(example):
+            full_text = example["text"]
 
-        prompt_len = len(prompt_enc["input_ids"])
+            split_marker = "Assistant:\nTOOL_CALL:\n"
+            split_idx = full_text.rfind(split_marker)
+            if split_idx == -1:
+                raise ValueError("split marker not found in training text")
 
-        # prompt 不参与 loss
-        for i in range(min(prompt_len, len(labels))):
-            labels[i] = -100
+            prompt_text = full_text[: split_idx + len(split_marker)]
 
-        # padding 不参与 loss
-        for i, m in enumerate(attention_mask):
-            if m == 0:
+            full_enc = tokenizer(
+                full_text,
+                truncation=True,
+                padding="max_length",
+                max_length=args.max_len,
+            )
+            prompt_enc = tokenizer(
+                prompt_text,
+                truncation=True,
+                padding=False,
+                max_length=args.max_len,
+            )
+
+            input_ids = full_enc["input_ids"]
+            attention_mask = full_enc["attention_mask"]
+            labels = input_ids.copy()
+
+            prompt_len = len(prompt_enc["input_ids"])
+
+            # prompt 不参与 loss
+            for i in range(min(prompt_len, len(labels))):
                 labels[i] = -100
 
-        return {
-            "input_ids": input_ids,
-            "attention_mask": attention_mask,
-            "labels": labels,
-        }
+            # padding 不参与 loss
+            for i, m in enumerate(attention_mask):
+                if m == 0:
+                    labels[i] = -100
 
-    dataset = dataset.map(tokenize, remove_columns=["text"])
-    dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
+            return {
+                "input_ids": input_ids,
+                "attention_mask": attention_mask,
+                "labels": labels,
+            }
+
+        dataset = dataset.map(tokenize, remove_columns=["text"])
+        dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
 
     training_args = TrainingArguments(
         output_dir=args.output_dir,
         per_device_train_batch_size=2,
         gradient_accumulation_steps=8,
-        num_train_epochs=2,
+        num_train_epochs=args.num_train_epochs,
         learning_rate=2e-4,
         logging_steps=20,
         save_steps=200,
@@ -362,11 +397,30 @@ def main():
         train_dataset=dataset,
     )
 
-    trainer.train()
+    train_result = trainer.train(resume_from_checkpoint=args.resume_from_checkpoint)
 
     model.save_pretrained(args.adapter_dir)
     tokenizer.save_pretrained(args.adapter_dir)
     print(f"\nSaved adapter to: {args.adapter_dir}")
+
+    ensure_parent(args.summary_path)
+    summary = {
+        "model": args.model,
+        "adapter_dir": args.adapter_dir,
+        "output_dir": args.output_dir,
+        "dataset_path": args.dataset_path,
+        "train_samples": args.train_samples,
+        "num_train_epochs": args.num_train_epochs,
+        "max_len": args.max_len,
+        "seed": args.seed,
+        "init_adapter": args.init_adapter,
+        "resume_from_checkpoint": args.resume_from_checkpoint,
+        "train_loss": float(train_result.training_loss),
+        "global_step": int(train_result.global_step),
+    }
+    with open(args.summary_path, "w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=2, ensure_ascii=False)
+    print(f"Saved summary to: {args.summary_path}")
 
     if not args.skip_eval:
         if hasattr(model, "gradient_checkpointing_disable"):

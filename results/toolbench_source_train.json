@@ -1,0 +1,14 @@
+{
+  "model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "adapter_dir": "adapters/adapter_toolbench_source",
+  "output_dir": "outputs/toolbench_source_cont",
+  "dataset_path": "data/toolbench_train.jsonl",
+  "train_samples": 3000,
+  "num_train_epochs": 1.0,
+  "max_len": 512,
+  "seed": 42,
+  "init_adapter": "outputs/toolbench_source/checkpoint-200",
+  "resume_from_checkpoint": null,
+  "train_loss": 0.676964171389316,
+  "global_step": 188
+}

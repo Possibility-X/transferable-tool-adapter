@@ -3,12 +3,12 @@ import json
 from pathlib import Path
 
 import torch
-from datasets import Dataset
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, Trainer, TrainingArguments
 from transformers import logging as hf_logging
 
 from eval_ood import extract_first_balanced_json, is_valid_schema
+from tool_data import build_training_dataset_from_records, load_jsonl_records
 from train_transfer import (
     FEWSHOT,
     build_instruction_and_gt,
@@ -16,7 +16,6 @@ from train_transfer import (
     build_tokenizer,
     ensure_dir,
     ensure_parent,
-    format_training_text,
     print_trainable_summary,
     set_seed,
     write_summary,
@@ -55,6 +54,8 @@ def get_input_device(model):
 @torch.no_grad()
 def generate_batch(model, tokenizer, prompts, max_len: int):
     tokenizer.padding_side = "left"
+    old_truncation_side = tokenizer.truncation_side
+    tokenizer.truncation_side = "left"
     inputs = tokenizer(
         prompts,
         return_tensors="pt",
@@ -62,6 +63,7 @@ def generate_batch(model, tokenizer, prompts, max_len: int):
         truncation=True,
         max_length=max_len,
     )
+    tokenizer.truncation_side = old_truncation_side
     input_device = get_input_device(model)
     inputs = {key: value.to(input_device) for key, value in inputs.items()}
     input_width = inputs["input_ids"].shape[1]
@@ -80,6 +82,8 @@ def generate_batch(model, tokenizer, prompts, max_len: int):
 
 def score_teacher(pred_json: dict, gt: dict):
     tool_ok = int(pred_json.get("tool") == gt["tool"])
+    if not gt["arguments"]:
+        return tool_ok, 1.0
     arg_match = sum(
         pred_json.get("arguments", {}).get(k) == v
         for k, v in gt["arguments"].items()
@@ -112,7 +116,6 @@ def load_pseudo_records(path: str):
                     "instruction": payload["instruction"],
                     "gt": payload["gt"],
                     "teacher": teacher,
-                    "text": format_training_text(payload["instruction"], teacher),
                 }
             )
     print(f"Loaded pseudo labels from: {path}")
@@ -160,12 +163,34 @@ def build_pseudo_dataset(args):
     correct_tool = 0
     correct_args = 0.0
     max_attempts = args.train_samples * args.max_attempt_factor
+    source_records = None
+    source_index = 0
+
+    if args.dataset_path:
+        source_records = load_jsonl_records(
+            args.dataset_path,
+            limit=max_attempts,
+            seed=args.seed,
+        )
+        print(f"Loaded source records for distillation: {len(source_records)}")
 
     while len(records) < args.train_samples and attempted < max_attempts:
         batch_items = []
-        for _ in range(args.teacher_batch_size):
-            instr, gt = build_instruction_and_gt()
-            batch_items.append((instr, gt))
+        if source_records is None:
+            for _ in range(args.teacher_batch_size):
+                instr, gt = build_instruction_and_gt()
+                batch_items.append((instr, gt))
+        else:
+            while (
+                len(batch_items) < args.teacher_batch_size
+                and source_index < len(source_records)
+            ):
+                record = source_records[source_index]
+                source_index += 1
+                batch_items.append((record["instruction"], record["gt"]))
+
+        if not batch_items:
+            break
 
         prompts = [format_inference_prompt(instr) for instr, _ in batch_items]
         outputs = generate_batch(teacher, tokenizer, prompts, args.max_len)
@@ -187,7 +212,6 @@ def build_pseudo_dataset(args):
                     "instruction": instr,
                     "gt": gt,
                     "teacher": pred_json,
-                    "text": format_training_text(instr, pred_json),
                 }
             )
 
@@ -201,9 +225,14 @@ def build_pseudo_dataset(args):
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
-    if len(records) < args.train_samples:
+    if len(records) < args.train_samples and source_records is None:
         raise RuntimeError(
             f"Only collected {len(records)} pseudo labels after {attempted} attempts"
+        )
+    if len(records) < args.train_samples:
+        print(
+            f"Using {len(records)} valid pseudo labels after filtering "
+            f"{attempted - parsed} invalid teacher outputs."
         )
 
     write_pseudo_records(args.pseudo_path, records)
@@ -223,51 +252,19 @@ def build_pseudo_dataset(args):
 
 
 def build_training_dataset(records, tokenizer, max_len: int):
-    dataset = Dataset.from_list([{"text": r["text"]} for r in records])
-
-    def tokenize(example):
-        full_text = example["text"]
-        split_marker = "Assistant:\nTOOL_CALL:\n"
-        split_idx = full_text.rfind(split_marker)
-        if split_idx == -1:
-            raise ValueError("split marker not found")
-
-        prompt_text = full_text[: split_idx + len(split_marker)]
-
-        full_enc = tokenizer(
-            full_text,
-            truncation=True,
-            padding="max_length",
-            max_length=max_len,
-        )
-        prompt_enc = tokenizer(
-            prompt_text,
-            truncation=True,
-            padding=False,
-            max_length=max_len,
-        )
-
-        input_ids = full_enc["input_ids"]
-        attention_mask = full_enc["attention_mask"]
-        labels = input_ids.copy()
-        prompt_len = len(prompt_enc["input_ids"])
-
-        for i in range(min(prompt_len, len(labels))):
-            labels[i] = -100
-
-        for i, m in enumerate(attention_mask):
-            if m == 0:
-                labels[i] = -100
-
-        return {
-            "input_ids": input_ids,
-            "attention_mask": attention_mask,
-            "labels": labels,
+    training_records = [
+        {
+            "instruction": record["instruction"],
+            "gt": record["teacher"],
         }
-
-    dataset = dataset.map(tokenize, remove_columns=["text"])
-    dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
-    return dataset
+        for record in records
+    ]
+    return build_training_dataset_from_records(
+        training_records,
+        tokenizer=tokenizer,
+        max_len=max_len,
+        fewshot=FEWSHOT,
+    )
 
 
 def main():
@@ -287,6 +284,12 @@ def main():
     parser.add_argument("--summary-path", type=str, default=DEFAULT_SUMMARY_PATH)
     parser.add_argument("--max-len", type=int, default=DEFAULT_MAX_LEN)
     parser.add_argument("--train-samples", type=int, default=DEFAULT_TRAIN_SAMPLES)
+    parser.add_argument(
+        "--dataset-path",
+        type=str,
+        default=None,
+        help="Optional JSONL records with instruction and gt/tool/arguments fields.",
+    )
     parser.add_argument("--teacher-batch-size", type=int, default=DEFAULT_TEACHER_BATCH_SIZE)
     parser.add_argument("--max-attempt-factor", type=int, default=3)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
@@ -342,6 +345,7 @@ def main():
         "train_output_dir": args.train_output_dir,
         "pseudo_path": args.pseudo_path,
         "pseudo_samples": len(records),
+        "dataset_path": args.dataset_path,
         "trainable_params": trainable,
         "total_params": total,
         "trainable_ratio_pct": pct,

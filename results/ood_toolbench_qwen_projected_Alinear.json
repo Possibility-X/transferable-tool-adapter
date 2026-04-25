@@ -1,0 +1,10 @@
+{
+  "samples": 314,
+  "max_input_tokens": 512,
+  "parsed": 0.9936305732484076,
+  "tool_acc": 0.1762820512820513,
+  "arg_acc": 0.5494123931623932,
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "adapter": "adapters/adapter_toolbench_qwen_projected_Alinear",
+  "dataset_path": "data/toolbench_eval.jsonl"
+}

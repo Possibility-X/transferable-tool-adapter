@@ -1,0 +1,10 @@
+{
+  "samples": 314,
+  "max_input_tokens": 512,
+  "parsed": 0.9872611464968153,
+  "tool_acc": 0.2,
+  "arg_acc": 0.5594162826420891,
+  "model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "adapter": "adapters/adapter_toolbench_source",
+  "dataset_path": "data/toolbench_eval.jsonl"
+}

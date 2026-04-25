@@ -414,6 +414,12 @@ def main():
         help="resize: copy resized source weights; linear: train W so late LoRA A = W(A_source)",
     )
     parser.add_argument("--train-samples", type=int, default=DEFAULT_TRAIN_SAMPLES)
+    parser.add_argument(
+        "--dataset-path",
+        type=str,
+        default=None,
+        help="Optional JSONL records with instruction and gt/tool/arguments fields.",
+    )
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--adapter-dir", type=str, default=None)
     parser.add_argument(
@@ -469,6 +475,8 @@ def main():
         tokenizer=tokenizer,
         train_samples=args.train_samples,
         max_len=args.max_len,
+        dataset_path=args.dataset_path,
+        seed=args.seed,
     )
 
     training_args = TrainingArguments(
@@ -517,6 +525,7 @@ def main():
         "train_loss": float(train_result.training_loss),
         "global_step": int(train_result.global_step),
         "train_samples": args.train_samples,
+        "dataset_path": args.dataset_path,
         "max_len": args.max_len,
         "seed": args.seed,
     }
