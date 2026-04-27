@@ -332,3 +332,134 @@ experiments:
         verbose-examples: 2
         use-chat-template: true
         save: results/ood_toolbench_qwen_hybrid_Alinear_1024.json
+
+  - id: apibank_source_tiny
+    dataset: apibank
+    method: source
+    model: tinyllama
+    machine: 3060
+    priority: high
+    tags: [apibank, source]
+    train:
+      script: src/train_source.py
+      args:
+        model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+        dataset-path: data/apibank_train.jsonl
+        max-len: 1024
+        train-samples: 3000
+        adapter-dir: adapters/adapter_apibank_source
+        output-dir: outputs/apibank_source
+        summary-path: results/apibank_source_train.json
+        results-path: results/apibank_source_in_domain.json
+        skip-eval: true
+    eval:
+      script: src/eval_apibank.py
+      args:
+        model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+        adapter: adapters/adapter_apibank_source
+        dataset-path: data/apibank_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        save: results/ood_apibank_source.json
+
+  - id: apibank_qwen_full
+    dataset: apibank
+    method: full
+    model: qwen2.5-0.5b
+    machine: 3060
+    priority: high
+    tags: [apibank, qwen, baseline]
+    train:
+      script: src/train_transfer.py
+      args:
+        mode: full
+        target-model: Qwen/Qwen2.5-0.5B-Instruct
+        dataset-path: data/apibank_train.jsonl
+        max-len: 1024
+        train-samples: 3000
+        adapter-dir: adapters/adapter_apibank_qwen_full
+        train-output-dir: outputs/apibank_qwen_full
+        summary-path: results/apibank_qwen_full_train.json
+    eval:
+      script: src/eval_apibank.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_apibank_qwen_full
+        dataset-path: data/apibank_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        save: results/ood_apibank_qwen_full.json
+
+  - id: apibank_qwen_projected_Alinear
+    dataset: apibank
+    method: projection_Alinear
+    model: qwen2.5-0.5b
+    source_model: tinyllama
+    machine: 3060
+    priority: high
+    tags: [apibank, qwen, projection, v2]
+    train:
+      script: src/train_projected_transfer.py
+      args:
+        source-model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+        target-model: Qwen/Qwen2.5-0.5B-Instruct
+        source-adapter: adapters/adapter_apibank_source
+        dataset-path: data/apibank_train.jsonl
+        max-len: 1024
+        train-samples: 3000
+        projection-scope: lora_A
+        projection-mode: linear
+        mode: full
+        adapter-dir: adapters/adapter_apibank_qwen_projected_Alinear
+        train-output-dir: outputs/apibank_qwen_projected_Alinear
+        summary-path: results/apibank_qwen_projected_Alinear_train.json
+    eval:
+      script: src/eval_apibank.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_apibank_qwen_projected_Alinear
+        dataset-path: data/apibank_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        save: results/ood_apibank_qwen_projected_Alinear.json
+
+  - id: apibank_qwen_nonparam
+    dataset: apibank
+    method: nonparametric_prompt
+    model: qwen2.5-0.5b
+    machine: 3060
+    priority: high
+    tags: [apibank, qwen, nonparametric, baseline]
+    eval:
+      script: src/eval_nonparam.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        dataset-path: data/apibank_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        use-chat-template: true
+        save: results/ood_apibank_qwen_nonparam.json
+
+  - id: apibank_qwen_hybrid_Alinear
+    dataset: apibank
+    method: hybrid_prompt_Alinear
+    model: qwen2.5-0.5b
+    source_model: tinyllama
+    machine: 3060
+    priority: high
+    tags: [apibank, qwen, hybrid, projection, v2]
+    eval:
+      script: src/eval_nonparam.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_apibank_qwen_projected_Alinear
+        dataset-path: data/apibank_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        use-chat-template: true
+        save: results/ood_apibank_qwen_hybrid_Alinear.json

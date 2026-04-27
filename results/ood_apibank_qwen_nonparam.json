@@ -1,0 +1,13 @@
+{
+  "samples": 467,
+  "max_input_tokens": 1024,
+  "parsed": 0.19700214132762311,
+  "tool_acc": 0.7717391304347826,
+  "arg_acc": 0.5144927536231884,
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "adapter": null,
+  "method": "nonparametric_prompt",
+  "prompt_style": "schema_json_chat_tail_constraint",
+  "use_chat_template": true,
+  "dataset_path": "data/apibank_eval.jsonl"
+}

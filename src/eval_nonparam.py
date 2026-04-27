@@ -16,7 +16,7 @@ DEFAULT_DATASET_PATH = "data/toolbench_eval.jsonl"
 
 NONPARAM_INSTRUCTION = """Output format override:
 Ignore any earlier instruction that asks for Thought, Action, Action Input, FUNCTION_CALL, markdown, or explanations.
-You are a tool caller. The task above includes available API subfunctions and parameter schemas. Choose exactly one API subfunction to call next. Use the subfunction name exactly as written in the task.
+You are a tool caller. The task above includes available tools or API descriptions and parameter schemas. Choose exactly one tool/API to call next. Use the tool/API name exactly as written in the task.
 Output exactly one JSON object with exactly two top-level keys: tool, arguments.
 Use an empty arguments object when the selected API has no required arguments.
 Do not output any extra text.
@@ -179,16 +179,16 @@ def main():
             "adapter": args.adapter,
             "method": "hybrid_prompt_adapter" if args.adapter else "nonparametric_prompt",
             "prompt_style": (
-                "toolbench_schema_json_chat_tail_constraint"
+                "schema_json_chat_tail_constraint"
                 if args.use_chat_template
-                else "toolbench_schema_json_tail_constraint"
+                else "schema_json_tail_constraint"
             ),
             "use_chat_template": args.use_chat_template,
             "dataset_path": args.dataset_path,
         }
     )
 
-    title = "Hybrid ToolBench Evaluation" if args.adapter else "Non-parametric ToolBench Evaluation"
+    title = "Hybrid Tool Evaluation" if args.adapter else "Non-parametric Tool Evaluation"
     print(f"\n=== {title} ===")
     print(result)
 
