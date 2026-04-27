@@ -196,3 +196,139 @@ experiments:
         max-new-tokens: 96
         verbose-examples: 2
         save: results/ood_toolbench_qwen_projected_Amlp.json
+
+  - id: toolbench_qwen_full_1024
+    dataset: toolbench
+    method: full_1024
+    model: qwen2.5-0.5b
+    machine: 3060
+    priority: high
+    tags: [toolbench, qwen, baseline, full-context, 1024]
+    train:
+      script: src/train_transfer.py
+      args:
+        mode: full
+        target-model: Qwen/Qwen2.5-0.5B-Instruct
+        dataset-path: data/toolbench_train.jsonl
+        max-len: 1024
+        train-samples: 3000
+        adapter-dir: adapters/adapter_toolbench_qwen_full_1024
+        train-output-dir: outputs/toolbench_qwen_full_1024
+        summary-path: results/toolbench_qwen_full_1024_train.json
+    eval:
+      script: src/eval_toolbench.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_toolbench_qwen_full_1024
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        save: results/ood_toolbench_qwen_full_1024.json
+
+  - id: toolbench_qwen_distill_1024
+    dataset: toolbench
+    method: distill_1024
+    model: qwen2.5-0.5b
+    teacher: tinyllama
+    machine: 3060
+    priority: high
+    status: blocked
+    tags: [toolbench, qwen, distill, full-context, 1024]
+    notes: 1024 distillation requires streaming pseudo-label generation; the non-streaming run was stopped after more than 6 hours without writing reusable pseudo labels.
+    train:
+      script: src/train_distill.py
+      args:
+        teacher-model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+        target-model: Qwen/Qwen2.5-0.5B-Instruct
+        teacher-adapter: adapters/adapter_toolbench_source
+        dataset-path: data/toolbench_train.jsonl
+        max-len: 1024
+        train-samples: 3000
+        teacher-batch-size: 4
+        adapter-dir: adapters/adapter_toolbench_qwen_distill_1024
+        train-output-dir: outputs/toolbench_qwen_distill_1024
+        pseudo-path: outputs/toolbench_qwen_distill_1024_pseudo.jsonl
+        summary-path: results/toolbench_qwen_distill_1024_train.json
+    eval:
+      script: src/eval_toolbench.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_toolbench_qwen_distill_1024
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        save: results/ood_toolbench_qwen_distill_1024.json
+
+  - id: toolbench_qwen_projected_Alinear_1024
+    dataset: toolbench
+    method: projection_Alinear_1024
+    model: qwen2.5-0.5b
+    source_model: tinyllama
+    machine: 3060
+    priority: high
+    tags: [toolbench, qwen, projection, v2, full-context, 1024]
+    train:
+      script: src/train_projected_transfer.py
+      args:
+        source-model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+        target-model: Qwen/Qwen2.5-0.5B-Instruct
+        source-adapter: adapters/adapter_toolbench_source
+        dataset-path: data/toolbench_train.jsonl
+        max-len: 1024
+        train-samples: 3000
+        projection-scope: lora_A
+        projection-mode: linear
+        mode: full
+        adapter-dir: adapters/adapter_toolbench_qwen_projected_Alinear_1024
+        train-output-dir: outputs/toolbench_qwen_projected_Alinear_1024
+        summary-path: results/toolbench_qwen_projected_Alinear_1024_train.json
+    eval:
+      script: src/eval_toolbench.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_toolbench_qwen_projected_Alinear_1024
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        save: results/ood_toolbench_qwen_projected_Alinear_1024.json
+
+  - id: toolbench_qwen_nonparam_1024
+    dataset: toolbench
+    method: nonparametric_prompt_1024
+    model: qwen2.5-0.5b
+    machine: 3060
+    priority: high
+    tags: [toolbench, qwen, nonparametric, full-context, 1024]
+    eval:
+      script: src/eval_nonparam.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        use-chat-template: true
+        save: results/ood_toolbench_qwen_nonparam_1024.json
+
+  - id: toolbench_qwen_hybrid_Alinear_1024
+    dataset: toolbench
+    method: hybrid_prompt_Alinear_1024
+    model: qwen2.5-0.5b
+    source_model: tinyllama
+    machine: 3060
+    priority: high
+    tags: [toolbench, qwen, hybrid, projection, v2, full-context, 1024]
+    eval:
+      script: src/eval_nonparam.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_toolbench_qwen_projected_Alinear_1024
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        use-chat-template: true
+        save: results/ood_toolbench_qwen_hybrid_Alinear_1024.json

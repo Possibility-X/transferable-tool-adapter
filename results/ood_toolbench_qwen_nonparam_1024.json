@@ -1,0 +1,13 @@
+{
+  "samples": 314,
+  "max_input_tokens": 1024,
+  "parsed": 0.6178343949044586,
+  "tool_acc": 0.34536082474226804,
+  "arg_acc": 0.6206185567010308,
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "adapter": null,
+  "method": "nonparametric_prompt",
+  "prompt_style": "toolbench_schema_json_chat_tail_constraint",
+  "use_chat_template": true,
+  "dataset_path": "data/toolbench_eval.jsonl"
+}
