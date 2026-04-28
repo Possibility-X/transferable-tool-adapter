@@ -13,7 +13,7 @@
 | toolbench_qwen_nonparam_1024 | toolbench | nonparametric_prompt_1024 | qwen2.5-0.5b | - | 3060 | high | done | 314 | 0.6178 | 0.3454 | 0.6206 | 1024 | - | - | - | - | results/ood_toolbench_qwen_nonparam_1024.json | - |
 | toolbench_qwen_hybrid_Alinear_1024 | toolbench | hybrid_prompt_Alinear_1024 | qwen2.5-0.5b | tinyllama | 3060 | high | done | 314 | 0.9968 | 0.3994 | 0.5954 | 1024 | - | - | - | - | results/ood_toolbench_qwen_hybrid_Alinear_1024.json | - |
 | apibank_source_tiny | apibank | source | tinyllama | - | 3060 | high | missing | - | - | - | - | - | - | - | - | - | results/ood_apibank_source.json | results/apibank_source_train.json |
-| apibank_qwen_full | apibank | full | qwen2.5-0.5b | - | 3060 | high | missing | - | - | - | - | - | - | - | - | - | results/ood_apibank_qwen_full.json | results/apibank_qwen_full_train.json |
+| apibank_qwen_full | apibank | full | qwen2.5-0.5b | - | 3060 | high | done | 467 | 0.9914 | 0.8035 | 0.5886 | 1024 | 3000 | 1024 | 0.1583 | 376 | results/ood_apibank_qwen_full.json | results/apibank_qwen_full_train.json |
 | apibank_qwen_projected_Alinear | apibank | projection_Alinear | qwen2.5-0.5b | tinyllama | 3060 | high | missing | - | - | - | - | - | - | - | - | - | results/ood_apibank_qwen_projected_Alinear.json | results/apibank_qwen_projected_Alinear_train.json |
 | apibank_qwen_nonparam | apibank | nonparametric_prompt | qwen2.5-0.5b | - | 3060 | high | done | 467 | 0.1970 | 0.7717 | 0.5145 | 1024 | - | - | - | - | results/ood_apibank_qwen_nonparam.json | - |
 | apibank_qwen_hybrid_Alinear | apibank | hybrid_prompt_Alinear | qwen2.5-0.5b | tinyllama | 3060 | high | missing | - | - | - | - | - | - | - | - | - | results/ood_apibank_qwen_hybrid_Alinear.json | - |
