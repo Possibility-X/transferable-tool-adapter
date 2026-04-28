@@ -103,22 +103,37 @@ uv run python src/eval_ood.py --adapter adapters/adapter_target_transfer --save 
 
 ---
 
-## Results
+## Current Results
 
-| Setting   | Tool Acc | Arg Acc |
-|----------|----------|---------|
-| Source   | 1.00     | 0.71    |
-| Transfer | 1.00     | 0.75    |
-| Full     | 1.00     | 0.71    |
+Metrics are reported on parsed outputs, so `Parsed` should be read together with `Tool Acc` and `Arg Acc`.
+
+### ToolBench 1024
+
+| Method | Parsed | Tool Acc | Arg Acc |
+| --- | ---: | ---: | ---: |
+| Qwen Full | 0.9936 | 0.4006 | 0.5870 |
+| Qwen Projection A-linear | 0.9936 | 0.4103 | 0.5885 |
+| Qwen Non-param | 0.6178 | 0.3454 | 0.6206 |
+| Qwen Hybrid A-linear | 0.9968 | 0.3994 | 0.5954 |
+
+### API-Bank
+
+| Method | Parsed | Tool Acc | Arg Acc |
+| --- | ---: | ---: | ---: |
+| Tiny Source | 0.9807 | 0.8035 | 0.5566 |
+| Qwen Non-param | 0.1970 | 0.7717 | 0.5145 |
+| Qwen Full | 0.9914 | 0.8035 | 0.5886 |
+| Qwen Projection A-linear | 0.9914 | 0.7883 | 0.5707 |
+| Qwen Hybrid A-linear | 0.9486 | 0.7223 | 0.5393 |
 
 ---
 
 ## Observations
 
-- Tool selection is **perfectly preserved**  
-- JSON output is **stable**  
-- Transfer achieves **equal or better performance**  
-- Errors mainly come from **argument normalization**  
+- Projection A-linear is the strongest transferable prior on ToolBench 1024.
+- API-Bank projection approaches full target training while improving structural reliability over prompt-only tool use.
+- Non-parametric prompting can have strong conditional accuracy, but parse rate is much lower under strict JSON evaluation.
+- Naive hybrid composition improves structure in some settings but can introduce prior-schema interference.
 
 ---
 
