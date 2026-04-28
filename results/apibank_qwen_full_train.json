@@ -1,0 +1,20 @@
+{
+  "mode": "full",
+  "source_model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "target_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "source_adapter": null,
+  "adapter_dir": "adapters/adapter_apibank_qwen_full",
+  "train_output_dir": "outputs/apibank_qwen_full",
+  "split_layer": 12,
+  "trainable_params": 1474560,
+  "total_params": 495507328,
+  "trainable_ratio_pct": 0.2975859117869595,
+  "copied_late_params": null,
+  "skipped_late_params": null,
+  "train_loss": 0.15829697061092296,
+  "global_step": 376,
+  "train_samples": 3000,
+  "dataset_path": "data/apibank_train.jsonl",
+  "max_len": 1024,
+  "seed": 42
+}
