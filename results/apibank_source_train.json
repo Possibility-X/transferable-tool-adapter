@@ -1,0 +1,14 @@
+{
+  "model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "adapter_dir": "adapters/adapter_apibank_source",
+  "output_dir": "outputs/apibank_source",
+  "dataset_path": "data/apibank_train.jsonl",
+  "train_samples": 3000,
+  "num_train_epochs": 2.0,
+  "max_len": 1024,
+  "seed": 42,
+  "init_adapter": null,
+  "resume_from_checkpoint": null,
+  "train_loss": 0.14166161703302504,
+  "global_step": 376
+}
