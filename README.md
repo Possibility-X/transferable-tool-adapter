@@ -126,13 +126,17 @@ Metrics are reported on parsed outputs, so `Parsed` should be read together with
 | Qwen Projection A-linear | 0.9914 | 0.7883 | 0.5707 |
 | Qwen Hybrid A-linear | 0.9486 | 0.7223 | 0.5393 |
 
-### Result Visualizations
+## Figures
 
 Generate the paper-facing plots from `results/merged/summary.csv`:
 
 ```powershell
 uv --cache-dir .uv-cache run python src/plot_results.py
 ```
+
+- `figures/toolbench_api_tradeoff.png`: compares parametric, non-parametric, hybrid, and MCP-style methods.
+- `figures/context_scaling.png`: shows the effect of ToolBench context length.
+- `figures/hybrid_composition.png`: summarizes hybrid composition difficulty.
 
 ![ToolBench/API Tradeoff](figures/toolbench_api_tradeoff.png)
 
