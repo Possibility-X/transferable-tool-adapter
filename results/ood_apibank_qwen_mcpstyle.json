@@ -1,0 +1,14 @@
+{
+  "samples": 467,
+  "max_input_tokens": 1024,
+  "registry_extracted": 1.0,
+  "parsed": 0.8351177730192719,
+  "tool_acc": 0.6871794871794872,
+  "arg_acc": 0.45384615384615384,
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "adapter": null,
+  "method": "mcpstyle_prompt",
+  "prompt_style": "mcpstyle_registry_chat",
+  "use_chat_template": true,
+  "dataset_path": "data/apibank_eval.jsonl"
+}

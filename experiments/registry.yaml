@@ -354,6 +354,44 @@ experiments:
         use-chat-template: true
         save: results/ood_toolbench_qwen_hybrid_router_prior_1024.json
 
+  - id: toolbench_qwen_mcpstyle_1024
+    dataset: toolbench
+    method: mcpstyle_prompt_1024
+    model: qwen2.5-0.5b
+    machine: 3060
+    priority: high
+    tags: [toolbench, qwen, mcp-style, nonparametric, full-context, 1024]
+    eval:
+      script: src/eval_mcp_style.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        use-chat-template: true
+        save: results/ood_toolbench_qwen_mcpstyle_1024.json
+
+  - id: toolbench_qwen_mcpstyle_hybrid_Alinear_1024
+    dataset: toolbench
+    method: mcpstyle_hybrid_Alinear_1024
+    model: qwen2.5-0.5b
+    source_model: tinyllama
+    machine: 3060
+    priority: high
+    tags: [toolbench, qwen, mcp-style, hybrid, projection, v2, full-context, 1024]
+    eval:
+      script: src/eval_mcp_style.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_toolbench_qwen_projected_Alinear_1024
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        use-chat-template: true
+        save: results/ood_toolbench_qwen_mcpstyle_hybrid_Alinear_1024.json
+
   - id: apibank_source_tiny
     dataset: apibank
     method: source
@@ -505,3 +543,41 @@ experiments:
         verbose-examples: 2
         use-chat-template: true
         save: results/ood_apibank_qwen_hybrid_router_prior.json
+
+  - id: apibank_qwen_mcpstyle
+    dataset: apibank
+    method: mcpstyle_prompt
+    model: qwen2.5-0.5b
+    machine: 3060
+    priority: high
+    tags: [apibank, qwen, mcp-style, nonparametric]
+    eval:
+      script: src/eval_mcp_style.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        dataset-path: data/apibank_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        use-chat-template: true
+        save: results/ood_apibank_qwen_mcpstyle.json
+
+  - id: apibank_qwen_mcpstyle_hybrid_Alinear
+    dataset: apibank
+    method: mcpstyle_hybrid_Alinear
+    model: qwen2.5-0.5b
+    source_model: tinyllama
+    machine: 3060
+    priority: high
+    tags: [apibank, qwen, mcp-style, hybrid, projection, v2]
+    eval:
+      script: src/eval_mcp_style.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_apibank_qwen_projected_Alinear
+        dataset-path: data/apibank_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        use-chat-template: true
+        save: results/ood_apibank_qwen_mcpstyle_hybrid_Alinear.json
