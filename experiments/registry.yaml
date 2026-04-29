@@ -333,6 +333,27 @@ experiments:
         use-chat-template: true
         save: results/ood_toolbench_qwen_hybrid_Alinear_1024.json
 
+  - id: toolbench_qwen_hybrid_router_prior_1024
+    dataset: toolbench
+    method: hybrid_router_prior_1024
+    model: qwen2.5-0.5b
+    source_model: tinyllama
+    machine: 3060
+    priority: high
+    tags: [toolbench, qwen, hybrid, router-prior, projection, v2, full-context, 1024]
+    eval:
+      script: src/eval_hybrid_router_prior.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_toolbench_qwen_projected_Alinear_1024
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 1024
+        max-router-tokens: 24
+        max-new-tokens: 96
+        verbose-examples: 2
+        use-chat-template: true
+        save: results/ood_toolbench_qwen_hybrid_router_prior_1024.json
+
   - id: apibank_source_tiny
     dataset: apibank
     method: source
@@ -463,3 +484,24 @@ experiments:
         verbose-examples: 2
         use-chat-template: true
         save: results/ood_apibank_qwen_hybrid_Alinear.json
+
+  - id: apibank_qwen_hybrid_router_prior
+    dataset: apibank
+    method: hybrid_router_prior
+    model: qwen2.5-0.5b
+    source_model: tinyllama
+    machine: 3060
+    priority: high
+    tags: [apibank, qwen, hybrid, router-prior, projection, v2]
+    eval:
+      script: src/eval_hybrid_router_prior.py
+      args:
+        model: Qwen/Qwen2.5-0.5B-Instruct
+        adapter: adapters/adapter_apibank_qwen_projected_Alinear
+        dataset-path: data/apibank_eval.jsonl
+        max-input-tokens: 1024
+        max-router-tokens: 24
+        max-new-tokens: 96
+        verbose-examples: 2
+        use-chat-template: true
+        save: results/ood_apibank_qwen_hybrid_router_prior.json

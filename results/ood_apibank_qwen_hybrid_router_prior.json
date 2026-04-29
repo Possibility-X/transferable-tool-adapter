@@ -1,0 +1,13 @@
+{
+  "samples": 467,
+  "max_input_tokens": 1024,
+  "router_acc": 0.588865096359743,
+  "parsed": 0.9850107066381156,
+  "tool_acc": 0.6173913043478261,
+  "arg_acc": 0.4693840579710145,
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "adapter": "adapters/adapter_apibank_qwen_projected_Alinear",
+  "method": "hybrid_router_prior",
+  "prompt_style": "router_then_prior_chat",
+  "dataset_path": "data/apibank_eval.jsonl"
+}
