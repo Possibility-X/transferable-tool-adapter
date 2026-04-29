@@ -75,6 +75,9 @@ uv run python -c "import torch; print(torch.cuda.is_available())"
 
 ## Experiments
 
+For the full registry-based workflow, multi-machine notes, and artifact policy, see
+[`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md).
+
 ### Step 1 — Train Source Adapter
 
 uv run python src/train_source.py
