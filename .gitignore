@@ -9,6 +9,7 @@ __pycache__/
 # Virtual Environment (uv)
 ############################
 .venv/
+.uv-cache/
 venv/
 env/
 
@@ -29,6 +30,7 @@ Desktop.ini
 ############################
 *.log
 logs/
+runs/
 
 ############################
 # Temporary Files
@@ -61,6 +63,7 @@ outputs/
 *.tar
 *.tar.gz
 *.7z
+data/apibank/raw/
 
 ############################
 # Notebook Cache
@@ -79,9 +82,9 @@ paper/
 ############################
 # Results
 ############################
-# TODO: 完成后，注释掉下面两行
-results/
-*.json
+# results/
+# *.json
+results/*smoke*.json
 
 ############################
 # IMPORTANT: keep these
@@ -92,3 +95,5 @@ results/
 !data/
 !src/
 !results/
+
+AGENTS.md
