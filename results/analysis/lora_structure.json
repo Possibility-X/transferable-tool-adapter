@@ -1,0 +1,723 @@
+{
+  "source_adapter": "adapters/adapter_toolbench_source",
+  "target_adapter": "adapters/adapter_toolbench_qwen_projected_Alinear_1024",
+  "source_weight_file": "adapters\\adapter_toolbench_source\\adapter_model.safetensors",
+  "target_weight_file": "adapters\\adapter_toolbench_qwen_projected_Alinear_1024\\adapter_model.safetensors",
+  "source_lora_tensors": 132,
+  "target_lora_tensors": 144,
+  "source_non_lora_tensors_skipped": 0,
+  "target_non_lora_tensors_skipped": 0,
+  "projection_matrix_found": false,
+  "projection_spectrum": {},
+  "summary": {
+    "layers": 24,
+    "mean_source_A_norm": 4.362719225151324,
+    "mean_source_B_norm": 0.9050489670830789,
+    "mean_target_A_norm": 4.759746170546724,
+    "mean_target_B_norm": 0.41005056142203306,
+    "mean_source_resized_target_A_cosine": 0.001672856232206951,
+    "mean_target_A_stable_rank": 17.146121591329575
+  },
+  "layers": [
+    {
+      "layer": 0,
+      "source_A_norm": 4.244462491858807,
+      "source_B_norm": 0.793905112462753,
+      "target_A_norm": 4.068062149528839,
+      "target_B_norm": 0.4055350007116573,
+      "source_A_B_norm_ratio": 5.346309559201814,
+      "target_A_B_norm_ratio": 10.031346597432917,
+      "mean_source_resized_target_A_cosine": 0.001564228053515156,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          0.7531478404998779,
+          0.7139604091644287,
+          0.7020588517189026,
+          0.6912921071052551,
+          0.6827914714813232,
+          0.6748254895210266,
+          0.6707305908203125,
+          0.6636967062950134
+        ],
+        "stable_rank": 29.175254821777344,
+        "entropy_effective_rank": 47.640499114990234
+      }
+    },
+    {
+      "layer": 1,
+      "source_A_norm": 4.274678868615203,
+      "source_B_norm": 0.8440197255485911,
+      "target_A_norm": 4.087186632061518,
+      "target_B_norm": 0.4031881974052152,
+      "source_A_B_norm_ratio": 5.064667020473688,
+      "target_A_B_norm_ratio": 10.1371683456145,
+      "mean_source_resized_target_A_cosine": 0.004283697402570397,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          0.7342011332511902,
+          0.712524950504303,
+          0.7064647674560547,
+          0.7005563378334045,
+          0.6917157769203186,
+          0.6788393259048462,
+          0.6742988228797913,
+          0.6701876521110535
+        ],
+        "stable_rank": 30.989810943603516,
+        "entropy_effective_rank": 47.642066955566406
+      }
+    },
+    {
+      "layer": 2,
+      "source_A_norm": 4.298602618605904,
+      "source_B_norm": 0.8793128566640916,
+      "target_A_norm": 4.074952914399594,
+      "target_B_norm": 0.3969801780053916,
+      "source_A_B_norm_ratio": 4.888592934844376,
+      "target_A_B_norm_ratio": 10.264877543443113,
+      "mean_source_resized_target_A_cosine": -0.006979854467014472,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          0.7155231237411499,
+          0.7092238068580627,
+          0.7052214741706848,
+          0.6997947692871094,
+          0.6868118643760681,
+          0.6785491108894348,
+          0.6698503494262695,
+          0.66395103931427
+        ],
+        "stable_rank": 32.433815002441406,
+        "entropy_effective_rank": 47.655723571777344
+      }
+    },
+    {
+      "layer": 3,
+      "source_A_norm": 4.3055897392249625,
+      "source_B_norm": 0.8477073848418126,
+      "target_A_norm": 4.1059256874730545,
+      "target_B_norm": 0.4099409234667976,
+      "source_A_B_norm_ratio": 5.079099010124127,
+      "target_A_B_norm_ratio": 10.015896077781086,
+      "mean_source_resized_target_A_cosine": -0.0010906546764696639,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          0.7568721771240234,
+          0.7165549993515015,
+          0.7017336487770081,
+          0.6935197710990906,
+          0.6871334910392761,
+          0.6824427843093872,
+          0.6729069352149963,
+          0.6670568585395813
+        ],
+        "stable_rank": 29.42909812927246,
+        "entropy_effective_rank": 47.6473388671875
+      }
+    },
+    {
+      "layer": 4,
+      "source_A_norm": 4.305838400741611,
+      "source_B_norm": 0.878447875618609,
+      "target_A_norm": 4.069612652337917,
+      "target_B_norm": 0.39381003651764257,
+      "source_A_B_norm_ratio": 4.901643592352489,
+      "target_A_B_norm_ratio": 10.333948541089557,
+      "mean_source_resized_target_A_cosine": 0.004563674912787974,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          0.7345467209815979,
+          0.7045190334320068,
+          0.6960365176200867,
+          0.6872386932373047,
+          0.6828539967536926,
+          0.6767191886901855,
+          0.6704083681106567,
+          0.6621885895729065
+        ],
+        "stable_rank": 30.694978713989258,
+        "entropy_effective_rank": 47.64344024658203
+      }
+    },
+    {
+      "layer": 5,
+      "source_A_norm": 4.291425669716505,
+      "source_B_norm": 0.8358727876059517,
+      "target_A_norm": 4.086184627966997,
+      "target_B_norm": 0.3988711746198445,
+      "source_A_B_norm_ratio": 5.134065534072123,
+      "target_A_B_norm_ratio": 10.244371837251592,
+      "mean_source_resized_target_A_cosine": 0.001715411082841456,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          0.7570952773094177,
+          0.7380408048629761,
+          0.7022221684455872,
+          0.6879944205284119,
+          0.681995153427124,
+          0.6757093667984009,
+          0.6735305190086365,
+          0.6641203165054321
+        ],
+        "stable_rank": 29.129629135131836,
+        "entropy_effective_rank": 47.624610900878906
+      }
+    },
+    {
+      "layer": 6,
+      "source_A_norm": 4.310019771174767,
+      "source_B_norm": 0.8550878811725476,
+      "target_A_norm": 4.072142349593104,
+      "target_B_norm": 0.40437253092722164,
+      "source_A_B_norm_ratio": 5.040440715011199,
+      "target_A_B_norm_ratio": 10.070274408243625,
+      "mean_source_resized_target_A_cosine": 0.005384485213047204,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          0.729498028755188,
+          0.7104026079177856,
+          0.7066456079483032,
+          0.701336145401001,
+          0.6882573962211609,
+          0.6776523590087891,
+          0.6714967489242554,
+          0.6605523228645325
+        ],
+        "stable_rank": 31.160009384155273,
+        "entropy_effective_rank": 47.638729095458984
+      }
+    },
+    {
+      "layer": 7,
+      "source_A_norm": 4.323025752950966,
+      "source_B_norm": 0.8530548380725282,
+      "target_A_norm": 4.109080065142655,
+      "target_B_norm": 0.4086450659922408,
+      "source_A_B_norm_ratio": 5.067699706995173,
+      "target_A_B_norm_ratio": 10.055376675514973,
+      "mean_source_resized_target_A_cosine": -0.005959633970633149,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          0.7541412115097046,
+          0.7240529656410217,
+          0.7084178924560547,
+          0.7028981447219849,
+          0.6941725015640259,
+          0.6892174482345581,
+          0.6741214990615845,
+          0.6680696606636047
+        ],
+        "stable_rank": 29.688207626342773,
+        "entropy_effective_rank": 47.6207160949707
+      }
+    },
+    {
+      "layer": 8,
+      "source_A_norm": 4.308615083990359,
+      "source_B_norm": 0.8817726314614488,
+      "target_A_norm": 4.077567712870494,
+      "target_B_norm": 0.39986070795643264,
+      "source_A_B_norm_ratio": 4.8863107452646455,
+      "target_A_B_norm_ratio": 10.197470348386346,
+      "mean_source_resized_target_A_cosine": 0.004520285253723462,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          0.7400286793708801,
+          0.7274153232574463,
+          0.7015490531921387,
+          0.7006940245628357,
+          0.6912305951118469,
+          0.6840646862983704,
+          0.6762629151344299,
+          0.6730692386627197
+        ],
+        "stable_rank": 30.360239028930664,
+        "entropy_effective_rank": 47.6158332824707
+      }
+    },
+    {
+      "layer": 9,
+      "source_A_norm": 4.332614314932811,
+      "source_B_norm": 0.9100410720324531,
+      "target_A_norm": 4.080159219985393,
+      "target_B_norm": 0.3941867092691199,
+      "source_A_B_norm_ratio": 4.760899752861159,
+      "target_A_B_norm_ratio": 10.350828995606188,
+      "mean_source_resized_target_A_cosine": 0.0007051350160812339,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          0.727090060710907,
+          0.7220563888549805,
+          0.7046852707862854,
+          0.7005331516265869,
+          0.6894636154174805,
+          0.6770422458648682,
+          0.6655399203300476,
+          0.6641973853111267
+        ],
+        "stable_rank": 31.49036979675293,
+        "entropy_effective_rank": 47.643836975097656
+      }
+    },
+    {
+      "layer": 10,
+      "source_A_norm": 4.355353840922879,
+      "source_B_norm": 0.9020114299975829,
+      "target_A_norm": 4.0774434381319535,
+      "target_B_norm": 0.3793120186508471,
+      "source_A_B_norm_ratio": 4.828490744218785,
+      "target_A_B_norm_ratio": 10.749576173817996,
+      "mean_source_resized_target_A_cosine": -0.004868527253468831,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          0.7185909748077393,
+          0.703765332698822,
+          0.6936661005020142,
+          0.6888992786407471,
+          0.6875872015953064,
+          0.6771094799041748,
+          0.6755078434944153,
+          0.667436420917511
+        ],
+        "stable_rank": 32.19676971435547,
+        "entropy_effective_rank": 47.66866683959961
+      }
+    },
+    {
+      "layer": 11,
+      "source_A_norm": 4.330089811049016,
+      "source_B_norm": 0.8778251032417577,
+      "target_A_norm": 4.0590205432034585,
+      "target_B_norm": 0.38927979852129957,
+      "source_A_B_norm_ratio": 4.932747759272596,
+      "target_A_B_norm_ratio": 10.427000215839271,
+      "mean_source_resized_target_A_cosine": 0.0035710046843936047,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          0.7377560138702393,
+          0.711749255657196,
+          0.6994953751564026,
+          0.6843045353889465,
+          0.6784517168998718,
+          0.6733883023262024,
+          0.6682369112968445,
+          0.6625840663909912
+        ],
+        "stable_rank": 30.27031707763672,
+        "entropy_effective_rank": 47.64079284667969
+      }
+    },
+    {
+      "layer": 12,
+      "source_A_norm": 4.365958100003567,
+      "source_B_norm": 0.8643858945882829,
+      "target_A_norm": 5.1045212291798165,
+      "target_B_norm": 0.41584378372607,
+      "source_A_B_norm_ratio": 5.050936309046464,
+      "target_A_B_norm_ratio": 12.275093265653654,
+      "mean_source_resized_target_A_cosine": -0.006222866999451071,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          2.325500011444092,
+          1.6574761867523193,
+          1.5821514129638672,
+          1.5306529998779297,
+          1.301971673965454,
+          1.237645149230957,
+          1.0975995063781738,
+          1.0370594263076782
+        ],
+        "stable_rank": 4.818116664886475,
+        "entropy_effective_rank": 36.827999114990234
+      }
+    },
+    {
+      "layer": 13,
+      "source_A_norm": 4.34772613038734,
+      "source_B_norm": 0.9028572873261232,
+      "target_A_norm": 5.041186209938023,
+      "target_B_norm": 0.38706040514080325,
+      "source_A_B_norm_ratio": 4.8155186776677,
+      "target_A_B_norm_ratio": 13.024288051639282,
+      "mean_source_resized_target_A_cosine": 0.0019850611885582716,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          2.1638426780700684,
+          1.937864899635315,
+          1.7346352338790894,
+          1.5601170063018799,
+          1.3628871440887451,
+          1.2046315670013428,
+          1.0905016660690308,
+          0.9373048543930054
+        ],
+        "stable_rank": 5.42767858505249,
+        "entropy_effective_rank": 35.773643493652344
+      }
+    },
+    {
+      "layer": 14,
+      "source_A_norm": 4.3292807835836555,
+      "source_B_norm": 0.8648875291070535,
+      "target_A_norm": 5.0476403146633615,
+      "target_B_norm": 0.39325816681375586,
+      "source_A_B_norm_ratio": 5.005599731624514,
+      "target_A_B_norm_ratio": 12.835436719751293,
+      "mean_source_resized_target_A_cosine": 0.00044587991821269196,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          2.5567567348480225,
+          2.02695894241333,
+          1.8037433624267578,
+          1.3861570358276367,
+          1.3145275115966797,
+          0.9970999360084534,
+          0.965946614742279,
+          0.858022153377533
+        ],
+        "stable_rank": 3.89760684967041,
+        "entropy_effective_rank": 34.479618072509766
+      }
+    },
+    {
+      "layer": 15,
+      "source_A_norm": 4.374612645141547,
+      "source_B_norm": 0.9290593093228352,
+      "target_A_norm": 4.423646277787884,
+      "target_B_norm": 0.3750655292207582,
+      "source_A_B_norm_ratio": 4.70864733956552,
+      "target_A_B_norm_ratio": 11.794329078917272,
+      "mean_source_resized_target_A_cosine": 0.003910689459492763,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          1.7619160413742065,
+          1.6256341934204102,
+          1.461991310119629,
+          1.3584522008895874,
+          1.2163022756576538,
+          1.07231605052948,
+          0.9354679584503174,
+          0.9072533249855042
+        ],
+        "stable_rank": 6.303625106811523,
+        "entropy_effective_rank": 37.13750457763672
+      }
+    },
+    {
+      "layer": 16,
+      "source_A_norm": 4.388344941491858,
+      "source_B_norm": 0.9140942004129368,
+      "target_A_norm": 4.935886728103415,
+      "target_B_norm": 0.3895900584188903,
+      "source_A_B_norm_ratio": 4.800757886341964,
+      "target_A_B_norm_ratio": 12.669437069660312,
+      "mean_source_resized_target_A_cosine": 0.0030074186312655606,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          2.7318925857543945,
+          1.6650944948196411,
+          1.6367634534835815,
+          1.3678747415542603,
+          1.2665876150131226,
+          1.17046058177948,
+          0.9641513228416443,
+          0.8476285934448242
+        ],
+        "stable_rank": 3.264397621154785,
+        "entropy_effective_rank": 34.78266143798828
+      }
+    },
+    {
+      "layer": 17,
+      "source_A_norm": 4.449454228097351,
+      "source_B_norm": 0.9731853317837175,
+      "target_A_norm": 5.317613511164558,
+      "target_B_norm": 0.43450532008114345,
+      "source_A_B_norm_ratio": 4.572052293412707,
+      "target_A_B_norm_ratio": 12.238316230907136,
+      "mean_source_resized_target_A_cosine": 0.003840832971036434,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          2.926267623901367,
+          2.182701349258423,
+          1.852979063987732,
+          1.5424507856369019,
+          1.1693161725997925,
+          1.0328516960144043,
+          0.9615024924278259,
+          0.7721884846687317
+        ],
+        "stable_rank": 3.302215576171875,
+        "entropy_effective_rank": 33.600948333740234
+      }
+    },
+    {
+      "layer": 18,
+      "source_A_norm": 4.511622730179349,
+      "source_B_norm": 1.017795857289076,
+      "target_A_norm": 5.1870883134913806,
+      "target_B_norm": 0.4275668071310791,
+      "source_A_B_norm_ratio": 4.432738351083651,
+      "target_A_B_norm_ratio": 12.131644054168067,
+      "mean_source_resized_target_A_cosine": 0.000379880890250206,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          2.428597927093506,
+          2.168957471847534,
+          1.9924930334091187,
+          1.582090973854065,
+          1.3583543300628662,
+          1.0886372327804565,
+          1.0154629945755005,
+          0.8709882497787476
+        ],
+        "stable_rank": 4.561796188354492,
+        "entropy_effective_rank": 33.49014663696289
+      }
+    },
+    {
+      "layer": 19,
+      "source_A_norm": 4.440811162237176,
+      "source_B_norm": 1.0014371267867799,
+      "target_A_norm": 5.406772927538274,
+      "target_B_norm": 0.42552448355110084,
+      "source_A_B_norm_ratio": 4.434438312154455,
+      "target_A_B_norm_ratio": 12.706138275329062,
+      "mean_source_resized_target_A_cosine": 0.00671948251935343,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          3.515998125076294,
+          1.7146084308624268,
+          1.475299596786499,
+          1.4222300052642822,
+          1.1807600259780884,
+          1.1093813180923462,
+          1.006007432937622,
+          0.8874773383140564
+        ],
+        "stable_rank": 2.3647162914276123,
+        "entropy_effective_rank": 33.43800735473633
+      }
+    },
+    {
+      "layer": 20,
+      "source_A_norm": 4.555109746471484,
+      "source_B_norm": 1.0582808629660558,
+      "target_A_norm": 5.530618396081566,
+      "target_B_norm": 0.4283533731463706,
+      "source_A_B_norm_ratio": 4.304254102927672,
+      "target_A_B_norm_ratio": 12.91134549836199,
+      "mean_source_resized_target_A_cosine": 0.006152414057093362,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          3.242480754852295,
+          2.1955888271331787,
+          1.5792995691299438,
+          1.3933006525039673,
+          1.296566128730774,
+          1.194176197052002,
+          0.9644767045974731,
+          0.9584717154502869
+        ],
+        "stable_rank": 2.9093267917633057,
+        "entropy_effective_rank": 33.38418960571289
+      }
+    },
+    {
+      "layer": 21,
+      "source_A_norm": 4.53658612195199,
+      "source_B_norm": 1.026035177524755,
+      "target_A_norm": 6.211274699001682,
+      "target_B_norm": 0.43203180287357906,
+      "source_A_B_norm_ratio": 4.42147230555605,
+      "target_A_B_norm_ratio": 14.37689229748492,
+      "mean_source_resized_target_A_cosine": 0.009174793221366903,
+      "matched_A_modules": 3,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          4.196664333343506,
+          2.215534210205078,
+          1.819901466369629,
+          1.3828680515289307,
+          1.3274564743041992,
+          1.2047865390777588,
+          1.0879461765289307,
+          0.9299160838127136
+        ],
+        "stable_rank": 2.190549373626709,
+        "entropy_effective_rank": 31.556861877441406
+      }
+    },
+    {
+      "layer": 22,
+      "source_A_norm": null,
+      "source_B_norm": null,
+      "target_A_norm": 6.659659332889403,
+      "target_B_norm": 0.4314966286478567,
+      "source_A_B_norm_ratio": null,
+      "target_A_B_norm_ratio": 15.433861798082166,
+      "mean_source_resized_target_A_cosine": null,
+      "matched_A_modules": 0,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          4.100627899169922,
+          2.5933878421783447,
+          2.4421896934509277,
+          1.9556515216827393,
+          1.3373454809188843,
+          1.1160976886749268,
+          1.0000556707382202,
+          0.9098081588745117
+        ],
+        "stable_rank": 2.6375670433044434,
+        "entropy_effective_rank": 30.731281280517578
+      }
+    },
+    {
+      "layer": 23,
+      "source_A_norm": null,
+      "source_B_norm": null,
+      "target_A_norm": 6.40066216058705,
+      "target_B_norm": 0.516934773333675,
+      "source_A_B_norm_ratio": null,
+      "target_A_B_norm_ratio": 12.381953180107507,
+      "mean_source_resized_target_A_cosine": null,
+      "matched_A_modules": 0,
+      "target_A_spectrum": {
+        "shape": [
+          48,
+          896
+        ],
+        "top_singular_values": [
+          3.817756175994873,
+          2.626830816268921,
+          2.035977602005005,
+          1.6865195035934448,
+          1.6041505336761475,
+          1.2970720529556274,
+          1.2399476766586304,
+          1.1240617036819458
+        ],
+        "stable_rank": 2.8108227252960205,
+        "entropy_effective_rank": 30.511821746826172
+      }
+    }
+  ],
+  "warnings": [
+    "Layer 22: missing source A modules for ['k_proj', 'q_proj', 'v_proj']",
+    "Layer 23: missing source A modules for ['k_proj', 'q_proj', 'v_proj']"
+  ]
+}

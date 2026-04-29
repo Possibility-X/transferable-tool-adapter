@@ -164,6 +164,22 @@ We observe clear layer specialization:
 
 This explains why freezing late layers still works.
 
+### Analysis Figures
+
+Generate LoRA structure diagnostics from saved PEFT adapters:
+
+```powershell
+uv --cache-dir .uv-cache run python src/analyze_lora_structure.py
+```
+
+- `results/analysis/lora_structure.json`: layer-wise norms, A cosine alignment, and spectrum statistics.
+- `figures/lora_ab_norms.png`: source/target LoRA A/B layer-wise Frobenius norms.
+- `figures/projection_spectrum.png`: projected LoRA A singular spectrum, or projection matrix spectrum if projector weights are present.
+
+![LoRA A/B Norms](figures/lora_ab_norms.png)
+
+![Projection Spectrum](figures/projection_spectrum.png)
+
 ---
 
 ## Transfer Mechanism
@@ -214,7 +230,7 @@ MIT (or your choice)
 ### Analysis
 
 - [ ] Error breakdown (tool vs argument vs format)
-- [ ] Layer-wise behavior analysis
+- [x] Layer-wise LoRA structure diagnostics
 
 ### Figures
 
@@ -226,3 +242,5 @@ MIT (or your choice)
 - [x] Figure: ToolBench/API parse-tool-arg tradeoff
 - [x] Figure: ToolBench context scaling
 - [x] Figure: Hybrid composition difficulty
+- [x] Figure: LoRA A/B layer-wise norms
+- [x] Figure: projected LoRA A singular spectrum
