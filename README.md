@@ -126,6 +126,20 @@ Metrics are reported on parsed outputs, so `Parsed` should be read together with
 | Qwen Projection A-linear | 0.9914 | 0.7883 | 0.5707 |
 | Qwen Hybrid A-linear | 0.9486 | 0.7223 | 0.5393 |
 
+### Result Visualizations
+
+Generate the paper-facing plots from `results/merged/summary.csv`:
+
+```powershell
+uv --cache-dir .uv-cache run python src/plot_results.py
+```
+
+![ToolBench/API Tradeoff](figures/toolbench_api_tradeoff.png)
+
+![Context Scaling](figures/context_scaling.png)
+
+![Hybrid Composition](figures/hybrid_composition.png)
+
 ---
 
 ## Observations
@@ -198,10 +212,13 @@ MIT (or your choice)
 - [ ] Error breakdown (tool vs argument vs format)
 - [ ] Layer-wise behavior analysis
 
-### Figures (to be added later)
+### Figures
 
 - [ ] Figure: Method overview (clean version)
 - [ ] Figure: Source vs Transfer vs Full comparison
 - [ ] Figure: Layer-wise ablation (split ratio)
 - [ ] Figure: Error analysis
 - [ ] Figure: Cross-model transfer (future)
+- [x] Figure: ToolBench/API parse-tool-arg tradeoff
+- [x] Figure: ToolBench context scaling
+- [x] Figure: Hybrid composition difficulty

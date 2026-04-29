@@ -1,0 +1,235 @@
+{
+  "summary_path": "results/merged/summary.csv",
+  "figures_dir": "figures",
+  "toolbench_api_tradeoff": {
+    "ToolBench 1024": [
+      {
+        "label": "Full",
+        "id": "toolbench_qwen_full_1024",
+        "values": {
+          "parsed": 0.9936305732484076,
+          "tool_acc": 0.40064102564102566,
+          "arg_acc": 0.586965811965812
+        }
+      },
+      {
+        "label": "Projection",
+        "id": "toolbench_qwen_projected_Alinear_1024",
+        "values": {
+          "parsed": 0.9936305732484076,
+          "tool_acc": 0.41025641025641024,
+          "arg_acc": 0.5884615384615385
+        }
+      },
+      {
+        "label": "Non-param",
+        "id": "toolbench_qwen_nonparam_1024",
+        "values": {
+          "parsed": 0.6178343949044586,
+          "tool_acc": 0.34536082474226804,
+          "arg_acc": 0.6206185567010308
+        }
+      },
+      {
+        "label": "Hybrid",
+        "id": "toolbench_qwen_hybrid_Alinear_1024",
+        "values": {
+          "parsed": 0.9968152866242038,
+          "tool_acc": 0.3993610223642173,
+          "arg_acc": 0.5954206602768903
+        }
+      },
+      {
+        "label": "MCP-style",
+        "id": "toolbench_qwen_mcpstyle_1024",
+        "values": {
+          "parsed": 0.23885350318471338,
+          "tool_acc": 0.49333333333333335,
+          "arg_acc": 0.7222222222222223
+        }
+      },
+      {
+        "label": "MCP+TTP",
+        "id": "toolbench_qwen_mcpstyle_hybrid_Alinear_1024",
+        "values": {
+          "parsed": 0.43312101910828027,
+          "tool_acc": 0.4632352941176471,
+          "arg_acc": 0.7022058823529411
+        }
+      }
+    ],
+    "API-Bank": [
+      {
+        "label": "Full",
+        "id": "apibank_qwen_full",
+        "values": {
+          "parsed": 0.9914346895074947,
+          "tool_acc": 0.8034557235421166,
+          "arg_acc": 0.5885529157667386
+        }
+      },
+      {
+        "label": "Projection",
+        "id": "apibank_qwen_projected_Alinear",
+        "values": {
+          "parsed": 0.9914346895074947,
+          "tool_acc": 0.7883369330453563,
+          "arg_acc": 0.5707343412526995
+        }
+      },
+      {
+        "label": "Non-param",
+        "id": "apibank_qwen_nonparam",
+        "values": {
+          "parsed": 0.19700214132762311,
+          "tool_acc": 0.7717391304347826,
+          "arg_acc": 0.5144927536231884
+        }
+      },
+      {
+        "label": "Hybrid",
+        "id": "apibank_qwen_hybrid_Alinear",
+        "values": {
+          "parsed": 0.9486081370449678,
+          "tool_acc": 0.7223476297968398,
+          "arg_acc": 0.5393152746425884
+        }
+      },
+      {
+        "label": "MCP-style",
+        "id": "apibank_qwen_mcpstyle",
+        "values": {
+          "parsed": 0.8351177730192719,
+          "tool_acc": 0.6871794871794872,
+          "arg_acc": 0.45384615384615384
+        }
+      },
+      {
+        "label": "MCP+TTP",
+        "id": "apibank_qwen_mcpstyle_hybrid_Alinear",
+        "values": {
+          "parsed": 0.867237687366167,
+          "tool_acc": 0.674074074074074,
+          "arg_acc": 0.46069958847736625
+        }
+      }
+    ]
+  },
+  "context_scaling": {
+    "metric": "tool_acc",
+    "512": [
+      {
+        "label": "Full",
+        "id": "toolbench_qwen_full",
+        "values": {
+          "tool_acc": 0.1624203821656051
+        }
+      },
+      {
+        "label": "Projection",
+        "id": "toolbench_qwen_projected_Alinear",
+        "values": {
+          "tool_acc": 0.1762820512820513
+        }
+      },
+      {
+        "label": "Non-param",
+        "id": "toolbench_qwen_nonparam",
+        "values": {
+          "tool_acc": 0.12037037037037036
+        }
+      },
+      {
+        "label": "Hybrid",
+        "id": "toolbench_qwen_hybrid_Alinear",
+        "values": {
+          "tool_acc": 0.09967845659163987
+        }
+      }
+    ],
+    "1024": [
+      {
+        "label": "Full",
+        "id": "toolbench_qwen_full_1024",
+        "values": {
+          "tool_acc": 0.40064102564102566
+        }
+      },
+      {
+        "label": "Projection",
+        "id": "toolbench_qwen_projected_Alinear_1024",
+        "values": {
+          "tool_acc": 0.41025641025641024
+        }
+      },
+      {
+        "label": "Non-param",
+        "id": "toolbench_qwen_nonparam_1024",
+        "values": {
+          "tool_acc": 0.34536082474226804
+        }
+      },
+      {
+        "label": "Hybrid",
+        "id": "toolbench_qwen_hybrid_Alinear_1024",
+        "values": {
+          "tool_acc": 0.3993610223642173
+        }
+      }
+    ]
+  },
+  "hybrid_composition": {
+    "ToolBench 1024": [
+      {
+        "label": "Naive Hybrid",
+        "id": "toolbench_qwen_hybrid_Alinear_1024",
+        "values": {
+          "parsed": 0.9968152866242038,
+          "tool_acc": 0.3993610223642173
+        }
+      },
+      {
+        "label": "Router-prior",
+        "id": "toolbench_qwen_hybrid_router_prior_1024",
+        "values": {
+          "parsed": 0.9904458598726115,
+          "tool_acc": 0.3504823151125402
+        }
+      },
+      {
+        "label": "MCP+TTP",
+        "id": "toolbench_qwen_mcpstyle_hybrid_Alinear_1024",
+        "values": {
+          "parsed": 0.43312101910828027,
+          "tool_acc": 0.4632352941176471
+        }
+      }
+    ],
+    "API-Bank": [
+      {
+        "label": "Naive Hybrid",
+        "id": "apibank_qwen_hybrid_Alinear",
+        "values": {
+          "parsed": 0.9486081370449678,
+          "tool_acc": 0.7223476297968398
+        }
+      },
+      {
+        "label": "Router-prior",
+        "id": "apibank_qwen_hybrid_router_prior",
+        "values": {
+          "parsed": 0.9850107066381156,
+          "tool_acc": 0.6173913043478261
+        }
+      },
+      {
+        "label": "MCP+TTP",
+        "id": "apibank_qwen_mcpstyle_hybrid_Alinear",
+        "values": {
+          "parsed": 0.867237687366167,
+          "tool_acc": 0.674074074074074
+        }
+      }
+    ]
+  }
+}
