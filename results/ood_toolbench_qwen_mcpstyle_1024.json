@@ -1,0 +1,14 @@
+{
+  "samples": 314,
+  "max_input_tokens": 1024,
+  "registry_extracted": 0.6401273885350318,
+  "parsed": 0.23885350318471338,
+  "tool_acc": 0.49333333333333335,
+  "arg_acc": 0.7222222222222223,
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "adapter": null,
+  "method": "mcpstyle_prompt",
+  "prompt_style": "mcpstyle_registry_chat",
+  "use_chat_template": true,
+  "dataset_path": "data/toolbench_eval.jsonl"
+}
