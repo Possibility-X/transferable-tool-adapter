@@ -1,6 +1,7 @@
 import argparse
 import json
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 
 import torch
@@ -51,6 +52,8 @@ DEFAULT_AONLY_SUMMARY = "results/qwen_projected_Aonly_train.json"
 DEFAULT_ALINEAR_SUMMARY = "results/qwen_projected_Alinear_train.json"
 DEFAULT_AMLP_SUMMARY = "results/qwen_projected_Amlp_train.json"
 
+DEFAULT_PROJECTION_LOG_DIR = "results/analysis"
+
 LAYER_RE = re.compile(r"layers\.(\d+)")
 
 
@@ -100,6 +103,177 @@ def resize_tensor(src, target_shape):
         return y.squeeze(0).squeeze(0)
 
     raise ValueError(f"Unsupported tensor shape: {src.shape}")
+
+
+def safe_experiment_id(value: str):
+    value = Path(value).stem if value else "projection"
+    value = re.sub(r"[^A-Za-z0-9_.-]+", "_", value).strip("._")
+    return value or "projection"
+
+
+def infer_projection_log_prefix(projection_log_prefix: str | None, summary_path: str, adapter_dir: str):
+    if projection_log_prefix:
+        return safe_experiment_id(projection_log_prefix)
+    if summary_path:
+        stem = Path(summary_path).stem
+        if stem.endswith("_train"):
+            stem = stem[: -len("_train")]
+        return safe_experiment_id(stem)
+    return safe_experiment_id(Path(adapter_dir).name)
+
+
+def detach_cpu(tensor: torch.Tensor | None):
+    if tensor is None:
+        return None
+    return tensor.detach().cpu()
+
+
+def tensor_shape(tensor: torch.Tensor | None):
+    if tensor is None:
+        return None
+    return list(tensor.shape)
+
+
+def tensor_norm(tensor: torch.Tensor | None):
+    if tensor is None:
+        return None
+    return float(tensor.detach().float().norm().cpu().item())
+
+
+def cosine_if_shape_compatible(left: torch.Tensor | None, right: torch.Tensor | None):
+    if left is None or right is None:
+        return None
+    if tuple(left.shape) != tuple(right.shape) or left.numel() == 0:
+        return None
+    try:
+        left_flat = left.detach().float().reshape(1, -1)
+        right_flat = right.detach().float().reshape(1, -1)
+        return float(F.cosine_similarity(left_flat, right_flat).cpu().item())
+    except Exception:
+        return None
+
+
+def projection_w_payload(projection: nn.Module | None):
+    if projection is None:
+        return None, None
+    if isinstance(projection, LinearAProjection):
+        weight = detach_cpu(projection.proj.weight)
+        return tensor_shape(weight), weight
+    if isinstance(projection, MLPAProjection):
+        weights = {}
+        shapes = {}
+        for name, tensor in projection.state_dict().items():
+            if name.startswith("net.") and name.endswith("weight"):
+                weights[name] = detach_cpu(tensor)
+                shapes[name] = tensor_shape(tensor)
+        return shapes or None, weights or None
+    return None, None
+
+
+class ProjectionInitLogger:
+    def __init__(
+        self,
+        log_dir: str,
+        experiment_id: str,
+        metadata: dict,
+    ):
+        self.log_dir = Path(log_dir)
+        self.experiment_id = safe_experiment_id(experiment_id)
+        self.metadata = dict(metadata)
+        self.layer_stats = []
+        self.layer_tensors = []
+        self.warnings = []
+
+    def add_warning(self, layer_name: str, reason: str):
+        self.warnings.append({"layer_name": layer_name, "reason": reason})
+
+    def add_layer(
+        self,
+        layer_name: str,
+        source_A: torch.Tensor | None,
+        resized_A: torch.Tensor | None,
+        projected_A: torch.Tensor | None,
+        source_layer: int | None = None,
+        target_layer: int | None = None,
+        target_shape=None,
+        W_shape=None,
+        W=None,
+        projection_mode: str | None = None,
+        fallback_reason: str | None = None,
+    ):
+        try:
+            stats = {
+                "layer_name": layer_name,
+                "source_layer": source_layer,
+                "target_layer": target_layer,
+                "source_A_shape": tensor_shape(source_A),
+                "resized_A_shape": tensor_shape(resized_A),
+                "projected_A_shape": tensor_shape(projected_A),
+                "target_A_shape": target_shape,
+                "W_shape": W_shape,
+                "source_A_norm": tensor_norm(source_A),
+                "resized_A_norm": tensor_norm(resized_A),
+                "projected_A_norm": tensor_norm(projected_A),
+                "resize_to_project_cosine": cosine_if_shape_compatible(resized_A, projected_A),
+                "source_to_resized_cosine": cosine_if_shape_compatible(source_A, resized_A),
+                "projection_mode": projection_mode,
+                "W_exists": W is not None,
+                "fallback_reason": fallback_reason,
+            }
+            self.layer_stats.append(stats)
+            self.layer_tensors.append(
+                {
+                    "layer_name": layer_name,
+                    "source_layer": source_layer,
+                    "target_layer": target_layer,
+                    "source_A": detach_cpu(source_A),
+                    "resized_A": detach_cpu(resized_A),
+                    "projected_A": detach_cpu(projected_A),
+                    "W": W,
+                }
+            )
+        except Exception as exc:
+            self.add_warning(layer_name, f"logging_failed: {type(exc).__name__}: {exc}")
+
+    def save(self):
+        self.log_dir.mkdir(parents=True, exist_ok=True)
+        json_path = self.log_dir / f"projection_init_{self.experiment_id}.json"
+        pt_path = self.log_dir / f"projection_init_{self.experiment_id}.pt"
+
+        metadata = dict(self.metadata)
+        metadata.update(
+            {
+                "experiment_id": self.experiment_id,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "number_of_logged_layers": len(self.layer_stats),
+                "warnings": self.warnings,
+            }
+        )
+
+        with json_path.open("w", encoding="utf-8") as f:
+            json.dump(
+                {
+                    "metadata": metadata,
+                    "layers": self.layer_stats,
+                },
+                f,
+                indent=2,
+            )
+
+        torch.save(
+            {
+                "metadata": metadata,
+                "layers": self.layer_tensors,
+            },
+            pt_path,
+        )
+
+        return {
+            "projection_init_json": str(json_path),
+            "projection_init_pt": str(pt_path),
+            "projection_init_logged_layers": len(self.layer_stats),
+            "projection_init_warnings": self.warnings,
+        }
 
 
 class LinearAProjection(nn.Module):
@@ -215,6 +389,7 @@ def initialize_projected_late_layers(
     projection_mode: str,
     projection_hidden_dim: int | None = None,
     max_examples: int = 10,
+    projection_logger: ProjectionInitLogger | None = None,
 ):
     learned_projection_modes = {"linear", "mlp"}
     if projection_mode in learned_projection_modes and projection_scope != "lora_A":
@@ -269,7 +444,25 @@ def initialize_projected_late_layers(
         source_tensor = source_by_layer.get((source_layer, suffix))
         if source_tensor is None:
             missing += 1
+            if projection_logger is not None and "lora_A" in target_key:
+                projection_logger.add_layer(
+                    layer_name=target_key,
+                    source_A=None,
+                    resized_A=None,
+                    projected_A=None,
+                    source_layer=source_layer,
+                    target_layer=target_layer,
+                    target_shape=list(target_param.shape),
+                    projection_mode=projection_mode,
+                    fallback_reason="missing_source_tensor",
+                )
             continue
+
+        original_source_tensor = source_tensor
+        resized_source_tensor = None
+        projected_tensor_for_log = None
+        projection_for_log = None
+        fallback_reason = None
 
         if projection_mode in learned_projection_modes and "lora_A" in target_key:
             if source_tensor.ndim != 2 or target_param.ndim != 2:
@@ -282,6 +475,9 @@ def initialize_projected_late_layers(
                     source_tensor,
                     (target_param.shape[0], source_tensor.shape[1]),
                 )
+                resized_source_tensor = source_tensor
+            else:
+                resized_source_tensor = source_tensor
 
             module_name = name.rsplit(".weight", 1)[0]
             lora_a_module = get_module_by_name(model, module_name)
@@ -302,6 +498,13 @@ def initialize_projected_late_layers(
                 mlp_projection_params += count_trainable_params(projection)
 
             projection = projection.to(device=target_param.device, dtype=target_param.dtype)
+            projection_for_log = projection
+            if projection_logger is not None:
+                try:
+                    projected_tensor_for_log = projection(target_param)
+                except Exception as exc:
+                    fallback_reason = f"projected_A_logging_failed: {type(exc).__name__}: {exc}"
+                    projection_logger.add_warning(target_key, fallback_reason)
 
             parametrize.register_parametrization(
                 lora_a_module,
@@ -316,6 +519,31 @@ def initialize_projected_late_layers(
                 projected_tensor = resize_tensor(source_tensor, tuple(target_param.shape))
                 target_param.data.copy_(
                     projected_tensor.to(device=target_param.device, dtype=target_param.dtype)
+                )
+            if "lora_A" in target_key:
+                resized_source_tensor = projected_tensor
+                projected_tensor_for_log = projected_tensor
+
+        if projection_logger is not None and "lora_A" in target_key:
+            try:
+                W_shape, W = projection_w_payload(projection_for_log)
+                projection_logger.add_layer(
+                    layer_name=target_key,
+                    source_A=original_source_tensor,
+                    resized_A=resized_source_tensor,
+                    projected_A=projected_tensor_for_log,
+                    source_layer=source_layer,
+                    target_layer=target_layer,
+                    target_shape=list(target_param.shape),
+                    W_shape=W_shape,
+                    W=W,
+                    projection_mode=projection_mode,
+                    fallback_reason=fallback_reason,
+                )
+            except Exception as exc:
+                projection_logger.add_warning(
+                    target_key,
+                    f"layer_logging_failed: {type(exc).__name__}: {exc}",
                 )
 
         projected += 1
@@ -386,6 +614,11 @@ def initialize_projected_late_layers(
 
     print("\n=== Projection Init Report ===")
     print(json.dumps(report, indent=2))
+    if projection_logger is not None:
+        log_report = projection_logger.save()
+        report.update(log_report)
+        print("\n=== Projection Init Log ===")
+        print(json.dumps(log_report, indent=2))
     return report
 
 
@@ -509,6 +742,23 @@ def main():
         default=None,
     )
     parser.add_argument("--summary-path", type=str, default=None)
+    parser.add_argument(
+        "--projection-log-dir",
+        type=str,
+        default=DEFAULT_PROJECTION_LOG_DIR,
+        help="Directory for optional projection initialization logs.",
+    )
+    parser.add_argument(
+        "--projection-log-prefix",
+        type=str,
+        default=None,
+        help="Optional experiment id prefix for projection init logs.",
+    )
+    parser.add_argument(
+        "--save-projection-init",
+        action="store_true",
+        help="Save projection initialization JSON/PT diagnostics before training.",
+    )
     args = parser.parse_args()
 
     set_seed(args.seed)
@@ -532,6 +782,29 @@ def main():
     target_split_layer = get_split_layer(model, args.split_ratio)
     print("Target split layer =", target_split_layer)
 
+    projection_logger = None
+    projection_log_experiment_id = None
+    if args.save_projection_init:
+        projection_log_experiment_id = infer_projection_log_prefix(
+            projection_log_prefix=args.projection_log_prefix,
+            summary_path=summary_path,
+            adapter_dir=adapter_dir,
+        )
+        projection_logger = ProjectionInitLogger(
+            log_dir=args.projection_log_dir,
+            experiment_id=projection_log_experiment_id,
+            metadata={
+                "projection_mode": args.projection_mode,
+                "projection_scope": args.projection_scope,
+                "source_model": args.source_model,
+                "target_model": args.target_model,
+                "source_adapter": args.source_adapter,
+                "target_adapter_dir": adapter_dir,
+                "dataset_path": args.dataset_path,
+                "seed": args.seed,
+            },
+        )
+
     projection_report = initialize_projected_late_layers(
         model=model,
         source_adapter=args.source_adapter,
@@ -540,6 +813,7 @@ def main():
         projection_scope=args.projection_scope,
         projection_mode=args.projection_mode,
         projection_hidden_dim=args.projection_hidden_dim,
+        projection_logger=projection_logger,
     )
 
     if args.mode == "freeze_late":
@@ -610,6 +884,14 @@ def main():
         "max_len": args.max_len,
         "seed": args.seed,
     }
+    if args.save_projection_init:
+        summary.update(
+            {
+                "save_projection_init": True,
+                "projection_log_dir": args.projection_log_dir,
+                "projection_log_prefix": projection_log_experiment_id,
+            }
+        )
     summary.update(projection_report)
     summary["materialized_projection_layers"] = materialized_projection_layers
 
