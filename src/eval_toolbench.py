@@ -7,7 +7,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from eval_ood import extract_first_balanced_json, is_valid_schema
 from tool_data import load_jsonl_records
-from train_transfer import FEWSHOT, ensure_parent
+from train_transfer import FEWSHOT, ensure_parent, use_fp16_training
 
 
 DEFAULT_MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
@@ -134,10 +134,12 @@ def main():
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
+    eval_dtype = torch.float16 if use_fp16_training(args.model) else torch.float32
+    eval_device_map = {"": 0} if eval_dtype == torch.float16 else "auto"
     base_model = AutoModelForCausalLM.from_pretrained(
         args.model,
-        dtype=torch.float32,
-        device_map="auto",
+        dtype=eval_dtype,
+        device_map=eval_device_map,
     )
     model = PeftModel.from_pretrained(base_model, args.adapter) if args.adapter else base_model
 
