@@ -42,6 +42,11 @@ DEFAULT_TRANSFER_SUMMARY = "results/target_transfer_train_summary.json"
 DEFAULT_FULL_SUMMARY = "results/target_full_train_summary.json"
 
 
+def use_fp16_training(model_name: str):
+    name = model_name.lower()
+    return torch.cuda.is_available() and ("mistral" in name or "7b" in name)
+
+
 # =========================
 # Data config
 # =========================
@@ -235,11 +240,13 @@ def build_tokenizer(model_name: str):
     return tokenizer
 
 
-def build_lora_model(model_name: str):
+def build_lora_model(model_name: str, dtype=None, device_map=None):
+    dtype = dtype or torch.float32
+    device_map = device_map or "auto"
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
-        dtype=torch.float32,
-        device_map="auto",
+        dtype=dtype,
+        device_map=device_map,
     )
 
     model.gradient_checkpointing_enable()
@@ -383,7 +390,13 @@ def main():
     ensure_parent(summary_path)
 
     tokenizer = build_tokenizer(args.target_model)
-    model = build_lora_model(args.target_model)
+    training_dtype = torch.float16 if use_fp16_training(args.target_model) else torch.float32
+    training_device_map = {"": 0} if training_dtype == torch.float16 else "auto"
+    model = build_lora_model(
+        args.target_model,
+        dtype=training_dtype,
+        device_map=training_device_map,
+    )
 
     split_layer = get_split_layer(model, args.split_ratio)
     print("Split layer =", split_layer)
@@ -422,7 +435,7 @@ def main():
         learning_rate=2e-4,
         logging_steps=20,
         save_steps=200,
-        fp16=False,
+        fp16=training_dtype == torch.float16,
         report_to="none",
         remove_unused_columns=False,
     )

@@ -7,7 +7,6 @@ from pathlib import Path
 import torch
 from torch import nn
 import torch.nn.functional as F
-from torch.nn.utils import parametrize
 from safetensors.torch import load_file
 from transformers import Trainer, TrainingArguments
 
@@ -27,6 +26,7 @@ from train_transfer import (
     get_split_layer,
     print_trainable_summary,
     set_seed,
+    use_fp16_training,
     verify_late_layers_frozen,
     write_summary,
 )
@@ -76,14 +76,6 @@ def suffix_from_layer_name(name: str):
     if match is None:
         return None
     return name[match.end():]
-
-
-def get_module_by_name(model, module_name: str):
-    modules = dict(model.named_modules())
-    module = modules.get(module_name)
-    if module is None:
-        raise ValueError(f"Module not found for parameter path: {module_name}")
-    return module
 
 
 def resize_tensor(src, target_shape):
@@ -416,10 +408,14 @@ def initialize_projected_late_layers(
     skipped_by_scope = 0
     linear_projected = 0
     linear_projection_params = 0
+    linear_projection_init_params = 0
     mlp_projected = 0
     mlp_projection_params = 0
+    mlp_projection_init_params = 0
     learned_projected = 0
     learned_projection_params = 0
+    learned_projection_init_params = 0
+    materialized_projection_layers = 0
     examples = []
     target_named_params = list(model.named_parameters())
 
@@ -479,15 +475,13 @@ def initialize_projected_late_layers(
             else:
                 resized_source_tensor = source_tensor
 
-            module_name = name.rsplit(".weight", 1)[0]
-            lora_a_module = get_module_by_name(model, module_name)
             if projection_mode == "linear":
                 projection = LinearAProjection(
                     source_weight=source_tensor,
                     target_dim=target_param.shape[1],
                 )
                 linear_projected += 1
-                linear_projection_params += count_trainable_params(projection)
+                linear_projection_init_params += count_trainable_params(projection)
             else:
                 projection = MLPAProjection(
                     source_weight=source_tensor,
@@ -495,25 +489,18 @@ def initialize_projected_late_layers(
                     hidden_dim=projection_hidden_dim,
                 )
                 mlp_projected += 1
-                mlp_projection_params += count_trainable_params(projection)
+                mlp_projection_init_params += count_trainable_params(projection)
 
             projection = projection.to(device=target_param.device, dtype=target_param.dtype)
             projection_for_log = projection
-            if projection_logger is not None:
-                try:
-                    projected_tensor_for_log = projection(target_param)
-                except Exception as exc:
-                    fallback_reason = f"projected_A_logging_failed: {type(exc).__name__}: {exc}"
-                    projection_logger.add_warning(target_key, fallback_reason)
+            with torch.no_grad():
+                projected_tensor = projection(target_param)
+                target_param.data.copy_(projected_tensor)
+                projected_tensor_for_log = projected_tensor.detach()
 
-            parametrize.register_parametrization(
-                lora_a_module,
-                "weight",
-                projection,
-            )
-            lora_a_module.parametrizations.weight.original.requires_grad = False
+            materialized_projection_layers += 1
             learned_projected += 1
-            learned_projection_params += count_trainable_params(projection)
+            learned_projection_init_params += count_trainable_params(projection)
         else:
             with torch.no_grad():
                 projected_tensor = resize_tensor(source_tensor, tuple(target_param.shape))
@@ -605,10 +592,15 @@ def initialize_projected_late_layers(
         "projection_hidden_dim": projection_hidden_dim,
         "learned_projected_lora_A_params": learned_projected,
         "learned_projection_trainable_params": learned_projection_params,
+        "learned_projection_init_params": learned_projection_init_params,
         "linear_projected_lora_A_params": linear_projected,
         "linear_projection_trainable_params": linear_projection_params,
+        "linear_projection_init_params": linear_projection_init_params,
         "mlp_projected_lora_A_params": mlp_projected,
         "mlp_projection_trainable_params": mlp_projection_params,
+        "mlp_projection_init_params": mlp_projection_init_params,
+        "materialized_projection_layers": materialized_projection_layers,
+        "projection_trainable_params": 0,
         "projection_examples": examples,
     }
 
@@ -620,19 +612,6 @@ def initialize_projected_late_layers(
         print("\n=== Projection Init Log ===")
         print(json.dumps(log_report, indent=2))
     return report
-
-
-def materialize_parametrized_lora_A(model):
-    materialized = 0
-    for module in model.modules():
-        if parametrize.is_parametrized(module, "weight"):
-            parametrize.remove_parametrizations(
-                module,
-                "weight",
-                leave_parametrized=True,
-            )
-            materialized += 1
-    return materialized
 
 
 def resolve_outputs(
@@ -777,7 +756,13 @@ def main():
     ensure_parent(summary_path)
 
     tokenizer = build_tokenizer(args.target_model)
-    model = build_lora_model(args.target_model)
+    training_dtype = torch.float16 if use_fp16_training(args.target_model) else torch.float32
+    training_device_map = {"": 0} if training_dtype == torch.float16 else "auto"
+    model = build_lora_model(
+        args.target_model,
+        dtype=training_dtype,
+        device_map=training_device_map,
+    )
 
     target_split_layer = get_split_layer(model, args.split_ratio)
     print("Target split layer =", target_split_layer)
@@ -841,7 +826,7 @@ def main():
         learning_rate=2e-4,
         logging_steps=20,
         save_steps=200,
-        fp16=False,
+        fp16=training_dtype == torch.float16,
         report_to="none",
         remove_unused_columns=False,
     )
@@ -854,10 +839,11 @@ def main():
 
     train_result = trainer.train()
 
-    materialized_projection_layers = 0
+    materialized_projection_layers = int(
+        projection_report.get("materialized_projection_layers", 0)
+    )
     if args.projection_mode in {"linear", "mlp"}:
-        materialized_projection_layers = materialize_parametrized_lora_A(model)
-        print(f"Materialized parametrized LoRA A layers: {materialized_projection_layers}")
+        print(f"Materialized projected LoRA A layers: {materialized_projection_layers}")
 
     model.save_pretrained(adapter_dir)
     tokenizer.save_pretrained(adapter_dir)
@@ -894,6 +880,7 @@ def main():
         )
     summary.update(projection_report)
     summary["materialized_projection_layers"] = materialized_projection_layers
+    summary["projection_trainable_params"] = 0
 
     write_summary(summary_path, summary)
 
