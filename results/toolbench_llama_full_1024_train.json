@@ -1,0 +1,20 @@
+{
+  "mode": "full",
+  "source_model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "target_model": "meta-llama/Llama-3.2-1B-Instruct",
+  "source_adapter": null,
+  "adapter_dir": "adapters/adapter_toolbench_llama_full_1024",
+  "train_output_dir": "outputs/toolbench_llama_full_1024",
+  "split_layer": 8,
+  "trainable_params": 2359296,
+  "total_params": 1238173696,
+  "trainable_ratio_pct": 0.19054644817781688,
+  "copied_late_params": null,
+  "skipped_late_params": null,
+  "train_loss": 0.3835379379860898,
+  "global_step": 376,
+  "train_samples": 3000,
+  "dataset_path": "data/toolbench_train.jsonl",
+  "max_len": 1024,
+  "seed": 42
+}
