@@ -1,0 +1,22 @@
+{
+  "json_path": "results\\analysis\\projection_init_toolbench_llama_projected_Alinear_1024.json",
+  "pt_path": "results\\analysis\\projection_init_toolbench_llama_projected_Alinear_1024.pt",
+  "num_json_layers": 24,
+  "num_tensor_layers": 24,
+  "num_layers_with_W": 24,
+  "avg_cosine_resize_project": -0.0010401571153124678,
+  "avg_norm_ratio_projected_to_resized": 0.5776805152658261,
+  "W_fro_norm_mean": 26.12545919418335,
+  "W_fro_norm_std": 0.00456675392347085,
+  "W_effective_rank_mean": 1648.6259307861328,
+  "W_effective_rank_std": 0.2598939612370716,
+  "representative_spectrum_layers": [
+    "model.layers.8.self_attn.q_proj.lora_A.weight",
+    "model.layers.9.self_attn.v_proj.lora_A.weight",
+    "model.layers.11.self_attn.q_proj.lora_A.weight",
+    "model.layers.12.self_attn.v_proj.lora_A.weight",
+    "model.layers.14.self_attn.q_proj.lora_A.weight",
+    "model.layers.15.self_attn.v_proj.lora_A.weight"
+  ],
+  "warnings": []
+}
