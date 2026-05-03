@@ -1,0 +1,10 @@
+{
+  "samples": 314,
+  "max_input_tokens": 1024,
+  "parsed": 0.9936305732484076,
+  "tool_acc": 0.5064102564102564,
+  "arg_acc": 0.6459401709401709,
+  "model": "mistralai/Mistral-7B-Instruct-v0.3",
+  "adapter": "adapters/adapter_toolbench_mistral_projected_AB_1024",
+  "dataset_path": "data/toolbench_eval.jsonl"
+}
