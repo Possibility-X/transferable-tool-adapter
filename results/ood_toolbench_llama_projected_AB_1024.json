@@ -1,0 +1,10 @@
+{
+  "samples": 314,
+  "max_input_tokens": 1024,
+  "parsed": 1.0,
+  "tool_acc": 0.445859872611465,
+  "arg_acc": 0.6210987261146498,
+  "model": "meta-llama/Llama-3.2-1B-Instruct",
+  "adapter": "adapters/adapter_toolbench_llama_projected_AB_1024",
+  "dataset_path": "data/toolbench_eval.jsonl"
+}
