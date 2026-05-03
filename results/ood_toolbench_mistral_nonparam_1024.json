@@ -1,0 +1,13 @@
+{
+  "samples": 314,
+  "max_input_tokens": 1024,
+  "parsed": 0.8949044585987261,
+  "tool_acc": 0.35587188612099646,
+  "arg_acc": 0.6245551601423488,
+  "model": "mistralai/Mistral-7B-Instruct-v0.3",
+  "adapter": null,
+  "method": "nonparametric_prompt",
+  "prompt_style": "schema_json_chat_tail_constraint",
+  "use_chat_template": true,
+  "dataset_path": "data/toolbench_eval.jsonl"
+}
