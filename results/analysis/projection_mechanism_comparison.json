@@ -1,0 +1,28 @@
+{
+  "source_files": {
+    "llama_Alinear": "results/analysis/projection_mechanism_summary.json",
+    "mistral_Alinear": "results/analysis/projection_mechanism_summary_mistral_Alinear.json"
+  },
+  "experiments": [
+    {
+      "name": "llama_Alinear",
+      "num_layers_with_W": 24,
+      "avg_cosine_resize_project": -0.001,
+      "avg_norm_ratio_projected_to_resized": 0.5777,
+      "W_effective_rank_mean": 1648.6
+    },
+    {
+      "name": "mistral_Alinear",
+      "num_layers_with_W": 48,
+      "avg_cosine_resize_project": null,
+      "avg_norm_ratio_projected_to_resized": 0.8167,
+      "W_effective_rank_mean": 1896.5
+    }
+  ],
+  "derived_comparison": {
+    "mistral_minus_llama_norm_ratio": 0.239,
+    "mistral_minus_llama_effective_rank": 247.9,
+    "layer_count_ratio_mistral_to_llama": 2.0
+  },
+  "interpretation": "Projection geometry is target-dependent: Mistral preserves more of resized A norm and uses higher effective-rank W maps than Llama, while both rely on high-rank target-space alignment."
+}
