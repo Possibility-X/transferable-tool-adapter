@@ -363,7 +363,78 @@ def plot_projection_w_spectrum(diagnostics, output_path, warnings):
     plt.close(fig)
 
 
+def plot_effective_rank_by_layer(diagnostics, output_path, warnings):
+    ranks = [item["W_effective_rank"] for item in diagnostics]
+    values = finite_values(ranks)
+
+    fig, ax = plt.subplots(figsize=(9, 4.8))
+    if not values:
+        ax.axis("off")
+        ax.text(0.5, 0.5, "No projection W tensors found", ha="center", va="center", fontsize=14)
+        warnings.append("No W effective ranks found for layer-wise plot")
+    else:
+        x = list(range(len(diagnostics)))
+        ax.plot(x, ranks, marker="o", linewidth=1.5, markersize=3.5)
+        ax.set_title("Projection W Effective Rank by Layer")
+        ax.set_xlabel("Logged layer index")
+        ax.set_ylabel("W effective rank")
+        ax.grid(alpha=0.25)
+
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=200)
+    plt.close(fig)
+
+
+def plot_norm_ratio_by_layer(diagnostics, output_path, warnings):
+    ratios = [item["norm_ratio_projected_to_resized"] for item in diagnostics]
+    values = finite_values(ratios)
+
+    fig, ax = plt.subplots(figsize=(9, 4.8))
+    if not values:
+        ax.axis("off")
+        ax.text(
+            0.5,
+            0.5,
+            "No projected/resized norm ratios found",
+            ha="center",
+            va="center",
+            fontsize=14,
+        )
+        warnings.append("No projected/resized norm ratios found for layer-wise plot")
+    else:
+        x = list(range(len(diagnostics)))
+        ratio_mean = mean(values)
+        ax.plot(x, ratios, marker="o", linewidth=1.5, markersize=3.5)
+        ax.axhline(
+            ratio_mean,
+            color="black",
+            linestyle="--",
+            linewidth=1.2,
+            label=f"mean={ratio_mean:.4f}",
+        )
+        ax.set_title("Projected-to-Resized A Norm Ratio by Layer")
+        ax.set_xlabel("Logged layer index")
+        ax.set_ylabel("projected_A_norm / resized_A_norm")
+        ax.grid(alpha=0.25)
+        ax.legend(loc="best", fontsize=9)
+
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=200)
+    plt.close(fig)
+
+
+def layer_value_records(diagnostics, key):
+    records = []
+    for item in diagnostics:
+        value = item.get(key)
+        if isinstance(value, (int, float)) and math.isfinite(value):
+            records.append({"layer_name": item["layer_name"], "value": float(value)})
+    return records
+
+
 def write_summary(args, json_layers, tensor_layers, diagnostics, representative_layers, warnings):
+    norm_ratios = [item["norm_ratio_projected_to_resized"] for item in diagnostics]
+    effective_ranks = [item["W_effective_rank"] for item in diagnostics]
     summary = {
         "json_path": str(args.json_path),
         "pt_path": str(args.pt_path),
@@ -382,7 +453,16 @@ def write_summary(args, json_layers, tensor_layers, diagnostics, representative_
             [item["W_effective_rank"] for item in diagnostics]
         ),
         "W_effective_rank_std": std_or_none(
-            [item["W_effective_rank"] for item in diagnostics]
+            effective_ranks
+        ),
+        "norm_ratio_min": min(finite_values(norm_ratios), default=None),
+        "norm_ratio_max": max(finite_values(norm_ratios), default=None),
+        "W_effective_rank_min": min(finite_values(effective_ranks), default=None),
+        "W_effective_rank_max": max(finite_values(effective_ranks), default=None),
+        "W_effective_rank_by_layer": layer_value_records(diagnostics, "W_effective_rank"),
+        "norm_ratio_by_layer": layer_value_records(
+            diagnostics,
+            "norm_ratio_projected_to_resized",
         ),
         "representative_spectrum_layers": representative_layers,
         "warnings": warnings,
@@ -424,6 +504,8 @@ def main():
     args.out_dir.mkdir(parents=True, exist_ok=True)
     drift_path = args.out_dir / "projection_init_drift.png"
     spectrum_path = args.out_dir / "projection_w_spectrum.png"
+    effective_rank_path = args.out_dir / "projection_effective_rank_by_layer.png"
+    norm_ratio_path = args.out_dir / "projection_norm_ratio_by_layer.png"
 
     plot_projection_init_drift(diagnostics, drift_path)
 
@@ -438,6 +520,8 @@ def main():
         for index in representative_indices(len(spectrum_items), max_items=6)
     ]
     plot_projection_w_spectrum(diagnostics, spectrum_path, warnings)
+    plot_effective_rank_by_layer(diagnostics, effective_rank_path, warnings)
+    plot_norm_ratio_by_layer(diagnostics, norm_ratio_path, warnings)
 
     summary = write_summary(
         args=args,
@@ -454,6 +538,8 @@ def main():
     print(f"W layers: {summary['num_layers_with_W']}")
     print(f"Wrote: {drift_path}")
     print(f"Wrote: {spectrum_path}")
+    print(f"Wrote: {effective_rank_path}")
+    print(f"Wrote: {norm_ratio_path}")
     print(f"Wrote: {args.summary_path}")
 
 
