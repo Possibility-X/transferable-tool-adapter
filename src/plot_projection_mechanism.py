@@ -485,7 +485,19 @@ def parse_args():
         type=Path,
         default=Path("results/analysis/projection_mechanism_summary.json"),
     )
+    parser.add_argument(
+        "--output-prefix",
+        type=str,
+        default="",
+        help="Optional suffix for output figures, e.g. mistral_Alinear.",
+    )
     return parser.parse_args()
+
+
+def figure_name(stem, output_prefix):
+    if output_prefix:
+        return f"{stem}_{output_prefix}.png"
+    return f"{stem}.png"
 
 
 def main():
@@ -502,10 +514,16 @@ def main():
     diagnostics = build_layer_diagnostics(json_layers, tensor_layers, warnings)
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    drift_path = args.out_dir / "projection_init_drift.png"
-    spectrum_path = args.out_dir / "projection_w_spectrum.png"
-    effective_rank_path = args.out_dir / "projection_effective_rank_by_layer.png"
-    norm_ratio_path = args.out_dir / "projection_norm_ratio_by_layer.png"
+    drift_path = args.out_dir / figure_name("projection_init_drift", args.output_prefix)
+    spectrum_path = args.out_dir / figure_name("projection_w_spectrum", args.output_prefix)
+    effective_rank_path = args.out_dir / figure_name(
+        "projection_effective_rank_by_layer",
+        args.output_prefix,
+    )
+    norm_ratio_path = args.out_dir / figure_name(
+        "projection_norm_ratio_by_layer",
+        args.output_prefix,
+    )
 
     plot_projection_init_drift(diagnostics, drift_path)
 
