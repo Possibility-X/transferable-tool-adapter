@@ -1,22 +1,44 @@
 {
   "source_files": {
-    "llama_Alinear": "results/analysis/projection_mechanism_summary.json",
-    "mistral_Alinear": "results/analysis/projection_mechanism_summary_mistral_Alinear.json"
+    "llama_Alinear": "results\\analysis\\projection_mechanism_summary.json",
+    "mistral_Alinear": "results\\analysis\\projection_mechanism_summary_mistral_Alinear.json"
   },
   "experiments": [
     {
       "name": "llama_Alinear",
+      "summary_path": "results\\analysis\\projection_mechanism_summary.json",
+      "num_json_layers": 24,
+      "num_tensor_layers": 24,
       "num_layers_with_W": 24,
       "avg_cosine_resize_project": -0.001,
       "avg_norm_ratio_projected_to_resized": 0.5777,
-      "W_effective_rank_mean": 1648.6
+      "norm_ratio_min": 0.573,
+      "norm_ratio_max": 0.5839,
+      "W_fro_norm_mean": 26.1255,
+      "W_fro_norm_std": 0.0046,
+      "W_effective_rank_mean": 1648.6,
+      "W_effective_rank_std": 0.3,
+      "W_effective_rank_min": 1648.2,
+      "W_effective_rank_max": 1649.3,
+      "warnings": []
     },
     {
       "name": "mistral_Alinear",
+      "summary_path": "results\\analysis\\projection_mechanism_summary_mistral_Alinear.json",
+      "num_json_layers": 48,
+      "num_tensor_layers": 48,
       "num_layers_with_W": 48,
       "avg_cosine_resize_project": null,
       "avg_norm_ratio_projected_to_resized": 0.8167,
-      "W_effective_rank_mean": 1896.5
+      "norm_ratio_min": 0.8124,
+      "norm_ratio_max": 0.8226,
+      "W_fro_norm_mean": 36.9416,
+      "W_fro_norm_std": 0.0049,
+      "W_effective_rank_mean": 1896.5,
+      "W_effective_rank_std": 0.1,
+      "W_effective_rank_min": 1896.3,
+      "W_effective_rank_max": 1896.8,
+      "warnings": []
     }
   ],
   "derived_comparison": {
