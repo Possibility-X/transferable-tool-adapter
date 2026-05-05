@@ -747,6 +747,41 @@ experiments:
         verbose-examples: 2
         save: results/ood_toolbench_mistral_projected_AB_1024_seed2.json
 
+  - id: toolbench_mistral_projected_AB_1024_seed3
+    dataset: toolbench
+    method: projection_AB_1024
+    model: mistral-7b
+    source_model: tinyllama
+    machine: 5060
+    priority: high
+    tags: [toolbench, mistral, projection, A+B, full-context, 1024, generalization, seed3]
+    train:
+      script: src/train_projected_transfer.py
+      args:
+        source-model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+        target-model: mistralai/Mistral-7B-Instruct-v0.3
+        source-adapter: adapters/adapter_toolbench_source
+        dataset-path: data/toolbench_train.jsonl
+        max-len: 1024
+        train-samples: 3000
+        projection-scope: all
+        projection-mode: resize
+        mode: full
+        seed: 3
+        adapter-dir: adapters/adapter_toolbench_mistral_projected_AB_1024_seed3
+        train-output-dir: outputs/toolbench_mistral_projected_AB_1024_seed3
+        summary-path: results/toolbench_mistral_projected_AB_1024_seed3_train.json
+    eval:
+      script: src/eval_toolbench.py
+      args:
+        model: mistralai/Mistral-7B-Instruct-v0.3
+        adapter: adapters/adapter_toolbench_mistral_projected_AB_1024_seed3
+        dataset-path: data/toolbench_eval.jsonl
+        max-input-tokens: 1024
+        max-new-tokens: 96
+        verbose-examples: 2
+        save: results/ood_toolbench_mistral_projected_AB_1024_seed3.json
+
   - id: toolbench_mistral_nonparam_1024
     dataset: toolbench
     method: nonparametric_prompt_1024
