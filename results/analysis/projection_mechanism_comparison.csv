@@ -1,3 +1,4 @@
 name,summary_path,num_json_layers,num_tensor_layers,num_layers_with_W,avg_cosine_resize_project,avg_norm_ratio_projected_to_resized,norm_ratio_min,norm_ratio_max,W_fro_norm_mean,W_fro_norm_std,W_effective_rank_mean,W_effective_rank_std,W_effective_rank_min,W_effective_rank_max,warnings
 llama_Alinear,results\analysis\projection_mechanism_summary.json,24,24,24,-0.001,0.5777,0.573,0.5839,26.1255,0.0046,1648.6,0.3,1648.2,1649.3,[]
 mistral_Alinear,results\analysis\projection_mechanism_summary_mistral_Alinear.json,48,48,48,,0.8167,0.8124,0.8226,36.9416,0.0049,1896.5,0.1,1896.3,1896.8,[]
+mistral_AB,results\analysis\projection_mechanism_summary_mistral_AB.json,48,48,0,1.0,1.0,1.0,1.0,,,,,,,"[""No projection W tensors found"", ""No W effective ranks found for layer-wise plot""]"

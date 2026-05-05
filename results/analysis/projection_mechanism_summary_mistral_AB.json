@@ -1,0 +1,217 @@
+{
+  "json_path": "results\\analysis\\projection_init_toolbench_mistral_projected_AB_1024.json",
+  "pt_path": "results\\analysis\\projection_init_toolbench_mistral_projected_AB_1024.pt",
+  "num_json_layers": 48,
+  "num_tensor_layers": 48,
+  "num_layers_with_W": 0,
+  "avg_cosine_resize_project": 1.000000146528085,
+  "avg_norm_ratio_projected_to_resized": 1.0,
+  "W_fro_norm_mean": null,
+  "W_fro_norm_std": null,
+  "W_effective_rank_mean": null,
+  "W_effective_rank_std": null,
+  "norm_ratio_min": 1.0,
+  "norm_ratio_max": 1.0,
+  "W_effective_rank_min": null,
+  "W_effective_rank_max": null,
+  "W_effective_rank_by_layer": [],
+  "norm_ratio_by_layer": [
+    {
+      "layer_name": "model.layers.16.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.16.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.16.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.17.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.17.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.17.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.18.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.18.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.18.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.19.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.19.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.19.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.20.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.20.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.20.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.21.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.21.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.21.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.22.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.22.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.22.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.23.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.23.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.23.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.24.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.24.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.24.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.25.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.25.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.25.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.26.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.26.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.26.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.27.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.27.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.27.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.28.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.28.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.28.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.29.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.29.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.29.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.30.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.30.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.30.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.31.self_attn.q_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.31.self_attn.k_proj.lora_A.weight",
+      "value": 1.0
+    },
+    {
+      "layer_name": "model.layers.31.self_attn.v_proj.lora_A.weight",
+      "value": 1.0
+    }
+  ],
+  "representative_spectrum_layers": [],
+  "warnings": [
+    "No projection W tensors found",
+    "No W effective ranks found for layer-wise plot"
+  ]
+}

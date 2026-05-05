@@ -1,7 +1,8 @@
 {
   "source_files": {
     "llama_Alinear": "results\\analysis\\projection_mechanism_summary.json",
-    "mistral_Alinear": "results\\analysis\\projection_mechanism_summary_mistral_Alinear.json"
+    "mistral_Alinear": "results\\analysis\\projection_mechanism_summary_mistral_Alinear.json",
+    "mistral_AB": "results\\analysis\\projection_mechanism_summary_mistral_AB.json"
   },
   "experiments": [
     {
@@ -39,6 +40,27 @@
       "W_effective_rank_min": 1896.3,
       "W_effective_rank_max": 1896.8,
       "warnings": []
+    },
+    {
+      "name": "mistral_AB",
+      "summary_path": "results\\analysis\\projection_mechanism_summary_mistral_AB.json",
+      "num_json_layers": 48,
+      "num_tensor_layers": 48,
+      "num_layers_with_W": 0,
+      "avg_cosine_resize_project": 1.0,
+      "avg_norm_ratio_projected_to_resized": 1.0,
+      "norm_ratio_min": 1.0,
+      "norm_ratio_max": 1.0,
+      "W_fro_norm_mean": null,
+      "W_fro_norm_std": null,
+      "W_effective_rank_mean": null,
+      "W_effective_rank_std": null,
+      "W_effective_rank_min": null,
+      "W_effective_rank_max": null,
+      "warnings": [
+        "No projection W tensors found",
+        "No W effective ranks found for layer-wise plot"
+      ]
     }
   ],
   "derived_comparison": {
