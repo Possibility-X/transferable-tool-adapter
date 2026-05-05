@@ -738,7 +738,15 @@ def main():
         action="store_true",
         help="Save projection initialization JSON/PT diagnostics before training.",
     )
+    parser.add_argument(
+        "--projection-init-only",
+        action="store_true",
+        help="Save projection initialization diagnostics and exit before training.",
+    )
     args = parser.parse_args()
+
+    if args.projection_init_only and not args.save_projection_init:
+        parser.error("--projection-init-only requires --save-projection-init")
 
     set_seed(args.seed)
 
@@ -751,8 +759,6 @@ def main():
         summary_path=args.summary_path,
     )
 
-    ensure_dir(adapter_dir)
-    ensure_dir(train_output_dir)
     ensure_parent(summary_path)
 
     tokenizer = build_tokenizer(args.target_model)
@@ -801,6 +807,33 @@ def main():
         projection_logger=projection_logger,
     )
 
+    materialized_projection_layers = int(
+        projection_report.get("materialized_projection_layers", 0)
+    )
+    if args.projection_init_only:
+        summary = {
+            "projection_init_only": True,
+            "projection_mode": args.projection_mode,
+            "projection_scope": args.projection_scope,
+            "target_model": args.target_model,
+            "source_model": args.source_model,
+            "source_adapter": args.source_adapter,
+            "target_adapter_dir": adapter_dir,
+            "projection_log_json": projection_report.get("projection_init_json"),
+            "projection_log_pt": projection_report.get("projection_init_pt"),
+            "materialized_projection_layers": materialized_projection_layers,
+            "seed": args.seed,
+        }
+        write_summary(summary_path, summary)
+        print(
+            "\nProjection init saved; exiting before training. "
+            f"Summary written to: {summary_path}"
+        )
+        return
+
+    ensure_dir(adapter_dir)
+    ensure_dir(train_output_dir)
+
     if args.mode == "freeze_late":
         freeze_tool_layers(model, target_split_layer)
         print("Mode: projected init + freeze late layers")
@@ -839,9 +872,6 @@ def main():
 
     train_result = trainer.train()
 
-    materialized_projection_layers = int(
-        projection_report.get("materialized_projection_layers", 0)
-    )
     if args.projection_mode in {"linear", "mlp"}:
         print(f"Materialized projected LoRA A layers: {materialized_projection_layers}")
 
