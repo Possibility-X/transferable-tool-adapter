@@ -1,0 +1,37 @@
+{
+  "source_files": {
+    "llama_Alinear_seed42": "results/ood_toolbench_llama_projected_Alinear_1024.json",
+    "llama_Alinear_seed2": "results/ood_toolbench_llama_projected_Alinear_1024_seed2.json",
+    "mistral_AB_seed42": "results/ood_toolbench_mistral_projected_AB_1024.json",
+    "mistral_AB_seed2": "results/ood_toolbench_mistral_projected_AB_1024_seed2.json"
+  },
+  "runs": [
+    {
+      "run": "llama_Alinear",
+      "seed42_parsed": 0.9968152866242038,
+      "seed2_parsed": 0.9968152866242038,
+      "delta_parsed": 0.0,
+      "seed42_tool_acc": 0.45686900958466453,
+      "seed2_tool_acc": 0.4472843450479233,
+      "delta_tool_acc": -0.00958466453674124,
+      "seed42_arg_acc": 0.6213791267305645,
+      "seed2_arg_acc": 0.6200479233226838,
+      "delta_arg_acc": -0.0013312034078806984,
+      "interpretation": "Seed2 closely matches seed42, with a small Tool Acc decrease and nearly unchanged parse/argument accuracy."
+    },
+    {
+      "run": "mistral_AB",
+      "seed42_parsed": 0.9936305732484076,
+      "seed2_parsed": 0.8821656050955414,
+      "delta_parsed": -0.11146496815286621,
+      "seed42_tool_acc": 0.5064102564102564,
+      "seed2_tool_acc": 0.5415162454873647,
+      "delta_tool_acc": 0.0351059890771083,
+      "seed42_arg_acc": 0.6459401709401709,
+      "seed2_arg_acc": 0.6611612515042118,
+      "delta_arg_acc": 0.015221080564040882,
+      "interpretation": "Seed2 improves conditional Tool Acc and Arg Acc but substantially lowers Parsed, indicating seed-sensitive structure/semantics tradeoff."
+    }
+  ],
+  "summary_interpretation": "Llama A-linear appears relatively stable across the two seeds, while Mistral A+B is more seed-sensitive: seed2 improves conditional semantic accuracy but lowers parse reliability."
+}

@@ -1,0 +1,3 @@
+run,seed42_parsed,seed2_parsed,delta_parsed,seed42_tool_acc,seed2_tool_acc,delta_tool_acc,seed42_arg_acc,seed2_arg_acc,delta_arg_acc,interpretation
+llama_Alinear,0.9968152866242038,0.9968152866242038,0.0,0.45686900958466453,0.4472843450479233,-0.00958466453674124,0.6213791267305645,0.6200479233226838,-0.0013312034078806984,"Seed2 closely matches seed42, with a small Tool Acc decrease and nearly unchanged parse/argument accuracy."
+mistral_AB,0.9936305732484076,0.8821656050955414,-0.11146496815286621,0.5064102564102564,0.5415162454873647,0.0351059890771083,0.6459401709401709,0.6611612515042118,0.015221080564040882,"Seed2 improves conditional Tool Acc and Arg Acc but substantially lowers Parsed, indicating seed-sensitive structure/semantics tradeoff."
