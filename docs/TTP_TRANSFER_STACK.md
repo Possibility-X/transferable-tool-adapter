@@ -96,6 +96,10 @@ canonical adapter receive the same Parsed, Tool Acc, and Arg Acc values as the
 legacy API-Bank metric code when both paths score the same predictions. It does
 not load a model or launch training.
 
+`src/eval_apibank.py` supports optional `--save-predictions` for local
+per-example prediction JSONL logging; this is intended for canonical alignment
+checks and does not change default evaluation behavior.
+
 By default it uses 20 examples and gold calls as synthetic perfect predictions:
 
 ```powershell
@@ -125,6 +129,14 @@ python src/tool_prior_workflow/apibank_canonical_alignment.py `
   --limit 20 `
   --save-summary outputs/canonical/apibank_alignment_summary.json `
   --save-predictions outputs/canonical/apibank_gold_predictions.jsonl
+```
+
+API-Bank eval can also save real per-example predictions for later alignment:
+
+```powershell
+python src/eval_apibank.py `
+  ...existing args... `
+  --save-predictions outputs/canonical/apibank_qwen_full_predictions.jsonl
 ```
 
 ## Example Commands

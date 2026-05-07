@@ -24,6 +24,31 @@ def format_inference_prompt(instruction: str):
     )
 
 
+def infer_split_from_path(path: str):
+    name = path.lower()
+    if "train" in name:
+        return "train"
+    if "eval" in name or "test" in name:
+        return "eval"
+    return "eval"
+
+
+def write_prediction_row(handle, record: dict, index: int, split: str, pred_text: str, parsed_pred):
+    gt = record["gt"]
+    row = {
+        "id": record.get("source_id") or f"apibank:{split}:{index}",
+        "index": index,
+        "prediction": pred_text,
+        "parsed_prediction": parsed_pred,
+        "gold_call": {
+            "name": gt["tool"],
+            "arguments": gt["arguments"],
+        },
+        "legacy_gt": gt,
+    }
+    handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+
 def evaluate(
     model,
     tokenizer,
@@ -31,38 +56,59 @@ def evaluate(
     max_new_tokens: int,
     max_input_tokens: int,
     verbose_examples: int,
+    save_predictions: str | None = None,
+    prediction_split: str = "eval",
 ):
     parsed = 0
     correct_tool = 0
     correct_args = 0.0
     shown = 0
+    prediction_handle = None
+    if save_predictions:
+        ensure_parent(save_predictions)
+        prediction_handle = open(save_predictions, "w", encoding="utf-8", newline="\n")
 
-    for record in records:
-        prompt = format_inference_prompt(record["instruction"])
-        pred_text = generate(model, tokenizer, prompt, max_new_tokens, max_input_tokens)
-        pred_json = extract_first_balanced_json(pred_text)
-        gt = record["gt"]
+    try:
+        for index, record in enumerate(records):
+            prompt = format_inference_prompt(record["instruction"])
+            pred_text = generate(model, tokenizer, prompt, max_new_tokens, max_input_tokens)
+            pred_json = extract_first_balanced_json(pred_text)
+            gt = record["gt"]
+            parsed_pred = pred_json if pred_json is not None and is_valid_schema(pred_json) else None
 
-        if pred_json is None or not is_valid_schema(pred_json):
+            if prediction_handle is not None:
+                write_prediction_row(
+                    prediction_handle,
+                    record=record,
+                    index=index,
+                    split=prediction_split,
+                    pred_text=pred_text,
+                    parsed_pred=parsed_pred,
+                )
+
+            if parsed_pred is None:
+                if shown < verbose_examples:
+                    print("\n[Parse Failed]")
+                    print("Instruction:", record["instruction"][:500])
+                    print("GT:", gt)
+                    print("Raw:", pred_text)
+                    shown += 1
+                continue
+
+            parsed += 1
+            if parsed_pred["tool"] == gt["tool"]:
+                correct_tool += 1
+            correct_args += score_args(parsed_pred["arguments"], gt["arguments"])
+
             if shown < verbose_examples:
-                print("\n[Parse Failed]")
+                print("\n[Example]")
                 print("Instruction:", record["instruction"][:500])
                 print("GT:", gt)
-                print("Raw:", pred_text)
+                print("Pred:", parsed_pred)
                 shown += 1
-            continue
-
-        parsed += 1
-        if pred_json["tool"] == gt["tool"]:
-            correct_tool += 1
-        correct_args += score_args(pred_json["arguments"], gt["arguments"])
-
-        if shown < verbose_examples:
-            print("\n[Example]")
-            print("Instruction:", record["instruction"][:500])
-            print("GT:", gt)
-            print("Pred:", pred_json)
-            shown += 1
+    finally:
+        if prediction_handle is not None:
+            prediction_handle.close()
 
     total = len(records)
     return {
@@ -83,6 +129,7 @@ def main():
     parser.add_argument("--max-input-tokens", type=int, default=1024)
     parser.add_argument("--max-new-tokens", type=int, default=96)
     parser.add_argument("--save", type=str, default=None)
+    parser.add_argument("--save-predictions", type=str, default=None)
     parser.add_argument("--verbose-examples", type=int, default=5)
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
@@ -109,6 +156,8 @@ def main():
         max_new_tokens=args.max_new_tokens,
         max_input_tokens=args.max_input_tokens,
         verbose_examples=args.verbose_examples,
+        save_predictions=args.save_predictions,
+        prediction_split=infer_split_from_path(args.dataset_path),
     )
     result.update(
         {
