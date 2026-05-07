@@ -52,6 +52,8 @@ Model predictions keep the existing strict JSON contract:
   Tool Acc, and Arg Acc scoring.
 - `src/tool_prior_workflow/diagnostics.py`: small error taxonomy for saved
   predictions.
+- `src/tool_prior_workflow/apibank_canonical_alignment.py`: API-Bank legacy
+  scorer versus canonical scorer alignment on the same predictions.
 
 ## Dataset Adapters
 
@@ -86,6 +88,44 @@ read with the semantic metrics.
   stronger claims.
 - The current evaluator scores saved predictions; it does not generate model
   outputs.
+
+## API-Bank Alignment Check
+
+The alignment helper verifies that API-Bank records converted through the
+canonical adapter receive the same Parsed, Tool Acc, and Arg Acc values as the
+legacy API-Bank metric code when both paths score the same predictions. It does
+not load a model or launch training.
+
+By default it uses 20 examples and gold calls as synthetic perfect predictions:
+
+```powershell
+python src/tool_prior_workflow/apibank_canonical_alignment.py `
+  --dataset-path data/apibank_eval.jsonl `
+  --prediction-mode gold `
+  --limit 20
+```
+
+Saved prediction JSONL can be checked by order or by `id` when every row has an
+`id` field:
+
+```powershell
+python src/tool_prior_workflow/apibank_canonical_alignment.py `
+  --dataset-path data/apibank_eval.jsonl `
+  --prediction-mode file `
+  --predictions-path outputs/canonical/apibank_predictions.jsonl `
+  --limit 100
+```
+
+Use explicit save paths only for local analysis artifacts:
+
+```powershell
+python src/tool_prior_workflow/apibank_canonical_alignment.py `
+  --dataset-path data/apibank_eval.jsonl `
+  --prediction-mode gold `
+  --limit 20 `
+  --save-summary outputs/canonical/apibank_alignment_summary.json `
+  --save-predictions outputs/canonical/apibank_gold_predictions.jsonl
+```
 
 ## Example Commands
 
