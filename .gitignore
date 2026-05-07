@@ -49,6 +49,8 @@ temp/
 ############################
 adapters/
 outputs/
+!src/tool_prior_workflow/adapters/
+!src/tool_prior_workflow/adapters/*.py
 
 *.pt
 *.pth
