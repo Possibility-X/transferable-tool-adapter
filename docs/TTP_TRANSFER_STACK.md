@@ -110,7 +110,9 @@ python src/tool_prior_workflow/apibank_canonical_alignment.py `
 ```
 
 Saved prediction JSONL can be checked by order or by `id` when every row has an
-`id` field:
+`id` field. API-Bank source ids may repeat; the alignment helper uses `id`
+alignment only when ids are unique and complete, otherwise it falls back to
+order alignment.
 
 ```powershell
 python src/tool_prior_workflow/apibank_canonical_alignment.py `

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import json
 from pathlib import Path
 from typing import Any
@@ -55,16 +56,45 @@ def prediction_rows(
     ]
 
 
-def load_prediction_file(path: str | Path, examples: list[dict[str, Any]]) -> tuple[list[Any], str]:
+def _duplicate_count(values: list[str]) -> int:
+    counts = Counter(values)
+    return sum(count - 1 for count in counts.values() if count > 1)
+
+
+def _prediction_id_diagnostics(
+    rows: list[dict[str, Any]], example_ids: list[str]
+) -> dict[str, Any]:
+    rows_have_ids = bool(rows) and all(isinstance(row, dict) and "id" in row for row in rows)
+    prediction_ids = [str(row["id"]) for row in rows] if rows_have_ids else []
+    missing_ids = sorted(set(example_ids) - set(prediction_ids)) if rows_have_ids else []
+    return {
+        "rows_have_ids": rows_have_ids,
+        "duplicate_example_id_count": _duplicate_count(example_ids),
+        "duplicate_prediction_id_count": _duplicate_count(prediction_ids) if rows_have_ids else None,
+        "missing_prediction_id_count": len(missing_ids) if rows_have_ids else None,
+    }
+
+
+def load_prediction_file(
+    path: str | Path, examples: list[dict[str, Any]]
+) -> tuple[list[Any], str, dict[str, Any]]:
     rows = load_jsonl(path)
     example_ids = [example["id"] for example in examples]
+    diagnostics = _prediction_id_diagnostics(rows, example_ids)
 
-    if rows and all(isinstance(row, dict) and "id" in row for row in rows):
+    if diagnostics["rows_have_ids"]:
+        if diagnostics["duplicate_example_id_count"] > 0:
+            return rows[: len(examples)], "order_duplicate_example_ids", diagnostics
+        if diagnostics["duplicate_prediction_id_count"] > 0:
+            return rows[: len(examples)], "order_duplicate_prediction_ids", diagnostics
+        if diagnostics["missing_prediction_id_count"] > 0:
+            return rows[: len(examples)], "order_missing_prediction_ids", diagnostics
+
         by_id = {str(row["id"]): row for row in rows}
         if all(example_id in by_id for example_id in example_ids):
-            return [by_id[example_id] for example_id in example_ids], "id"
+            return [by_id[example_id] for example_id in example_ids], "id", diagnostics
 
-    return rows[: len(examples)], "order"
+    return rows[: len(examples)], "order", diagnostics
 
 
 def evaluate_legacy_records(
@@ -137,10 +167,13 @@ def run_alignment(
     if prediction_mode == "gold":
         predictions = gold_predictions(examples)
         alignment = "gold"
+        prediction_id_diagnostics = None
     elif prediction_mode == "file":
         if predictions_path is None:
             raise ValueError("--predictions-path is required for file prediction mode")
-        predictions, alignment = load_prediction_file(predictions_path, examples)
+        predictions, alignment, prediction_id_diagnostics = load_prediction_file(
+            predictions_path, examples
+        )
     else:
         raise ValueError(f"Unsupported prediction mode: {prediction_mode}")
 
@@ -167,6 +200,8 @@ def run_alignment(
         "metrics_match": all(abs(value) <= 1e-12 for value in deltas.values()),
         "coverage": tool_coverage_summary(examples),
     }
+    if prediction_id_diagnostics is not None:
+        summary["prediction_id_diagnostics"] = prediction_id_diagnostics
     return summary, prediction_rows(examples, predictions)
 
 
