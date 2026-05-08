@@ -1,0 +1,99 @@
+{
+  "title": "API-Bank small error profile summary",
+  "dataset": "API-Bank",
+  "status": "public compact analysis summary; per-example prediction JSONL remains ignored and is not committed",
+  "source_artifact": "outputs\\canonical\\apibank_error_profile_100_summary.json",
+  "scope": "Selected 100-sample saved predictions under canonical re-scoring.",
+  "runs": [
+    {
+      "run": "Qwen non-param local eval_apibank smoke",
+      "prediction_path": "outputs\\canonical\\apibank_nonparam_qwen_100_predictions.jsonl",
+      "samples": 100,
+      "counts": {
+        "parse_failure": 2,
+        "schema_mismatch": 0,
+        "wrong_tool": 83,
+        "missing_argument": 2,
+        "wrong_argument_value": 4,
+        "extra_argument": 1,
+        "over_generation": 3,
+        "exact_call": 5
+      },
+      "rates": {
+        "parse_failure": 0.02,
+        "schema_mismatch": 0.0,
+        "wrong_tool": 0.83,
+        "missing_argument": 0.02,
+        "wrong_argument_value": 0.04,
+        "extra_argument": 0.01,
+        "over_generation": 0.03,
+        "exact_call": 0.05
+      },
+      "caveat": "Local eval_apibank smoke; not exact registry reproduction because registry non-param uses eval_nonparam.py."
+    },
+    {
+      "run": "Qwen Full",
+      "prediction_path": "outputs\\canonical\\apibank_qwen_full_100_predictions.jsonl",
+      "samples": 100,
+      "counts": {
+        "parse_failure": 0,
+        "schema_mismatch": 0,
+        "wrong_tool": 19,
+        "missing_argument": 3,
+        "wrong_argument_value": 16,
+        "extra_argument": 2,
+        "over_generation": 0,
+        "exact_call": 60
+      },
+      "rates": {
+        "parse_failure": 0.0,
+        "schema_mismatch": 0.0,
+        "wrong_tool": 0.19,
+        "missing_argument": 0.03,
+        "wrong_argument_value": 0.16,
+        "extra_argument": 0.02,
+        "over_generation": 0.0,
+        "exact_call": 0.6
+      },
+      "caveat": "Selected 100-sample saved-prediction profile."
+    },
+    {
+      "run": "Qwen Projected A-linear",
+      "prediction_path": "outputs\\canonical\\apibank_qwen_projected_Alinear_100_predictions.jsonl",
+      "samples": 100,
+      "counts": {
+        "parse_failure": 1,
+        "schema_mismatch": 0,
+        "wrong_tool": 21,
+        "missing_argument": 5,
+        "wrong_argument_value": 17,
+        "extra_argument": 2,
+        "over_generation": 0,
+        "exact_call": 54
+      },
+      "rates": {
+        "parse_failure": 0.01,
+        "schema_mismatch": 0.0,
+        "wrong_tool": 0.21,
+        "missing_argument": 0.05,
+        "wrong_argument_value": 0.17,
+        "extra_argument": 0.02,
+        "over_generation": 0.0,
+        "exact_call": 0.54
+      },
+      "caveat": "Selected 100-sample saved-prediction profile."
+    }
+  ],
+  "interpretation": [
+    "This is a small diagnostic API-Bank error profile.",
+    "It helps interpret selected saved predictions under canonical re-scoring.",
+    "It remains secondary evidence.",
+    "ToolBench error profiling is deferred until per-example ToolBench prediction logging exists.",
+    "Per-example prediction JSONL remains ignored and is not committed."
+  ],
+  "caveats": [
+    "API-Bank schemas are best-effort extracted from instruction text.",
+    "The non-param row is a local eval_apibank.py smoke, not exact registry reproduction.",
+    "Counts are over selected 100-sample saved predictions."
+  ]
+}
