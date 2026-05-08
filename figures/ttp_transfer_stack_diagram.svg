@@ -1,0 +1,114 @@
+<svg width="1600" height="650" viewBox="0 0 1600 650" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">TTP Transfer Stack for Schema-Call Adapter Transfer</title>
+  <desc id="desc">Simplified architecture diagram showing public tool-use datasets flowing through data interface, parametric transfer, and evaluation diagnostics groups. ToolBench is marked as the primary evidence path. API-Bank is marked as a secondary re-scoring path through best-effort schemas and saved predictions.</desc>
+
+  <defs>
+    <marker id="arrow-main" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L11,4.5 L0,9 Z" fill="#2f2f2f"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L11,4.5 L0,9 Z" fill="#b86b1f"/>
+    </marker>
+    <marker id="arrow-purple" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L11,4.5 L0,9 Z" fill="#7460a8"/>
+    </marker>
+    <style>
+      .group { fill: #f7f7f7; stroke: #d8d8d8; stroke-width: 1.5; }
+      .group-label { font: 700 17px Arial, Helvetica, sans-serif; fill: #343434; }
+      .node-title { font: 700 15px Arial, Helvetica, sans-serif; fill: #202020; }
+      .node-sub { font: 12px Arial, Helvetica, sans-serif; fill: #505050; }
+      .path-label { font: 700 14px Arial, Helvetica, sans-serif; }
+      .path-note { font: 12px Arial, Helvetica, sans-serif; }
+      .main-arrow { stroke: #2f2f2f; stroke-width: 2.2; fill: none; marker-end: url(#arrow-main); }
+      .api-path { stroke: #b86b1f; stroke-width: 2.8; stroke-dasharray: 9 7; fill: none; marker-end: url(#arrow-orange); }
+      .diag-path { stroke: #7460a8; stroke-width: 2.6; stroke-dasharray: 7 6; fill: none; marker-end: url(#arrow-purple); }
+    </style>
+  </defs>
+
+  <rect width="1600" height="650" fill="#ffffff"/>
+
+  <!-- Group backgrounds -->
+  <rect class="group" x="24" y="145" width="575" height="250" rx="16" ry="16"/>
+  <rect class="group" x="615" y="145" width="575" height="250" rx="16" ry="16"/>
+  <rect class="group" x="1206" y="145" width="370" height="250" rx="16" ry="16"/>
+
+  <text x="311.5" y="176" text-anchor="middle" class="group-label">Data Interface</text>
+  <text x="902.5" y="176" text-anchor="middle" class="group-label">Parametric Transfer</text>
+  <text x="1391" y="176" text-anchor="middle" class="group-label">Evaluation &amp; Diagnostics</text>
+
+  <!-- ToolBench bracket -->
+  <path d="M58 112 L58 132 M58 112 L1354 112 M1354 112 L1354 132" stroke="#5f8fc8" stroke-width="3" fill="none"/>
+  <text x="706" y="96" text-anchor="middle" class="path-label" fill="#315f96">ToolBench primary evidence path</text>
+
+  <!-- Main nodes -->
+  <g id="node-datasets">
+    <rect x="44" y="238" width="156" height="82" rx="10" ry="10" fill="#eef4ff" stroke="#4c78a8" stroke-width="2"/>
+    <text x="122" y="265" text-anchor="middle" class="node-title">Public Tool-Use</text>
+    <text x="122" y="284" text-anchor="middle" class="node-title">Datasets</text>
+    <text x="122" y="305" text-anchor="middle" class="node-sub">ToolBench / API-Bank</text>
+  </g>
+
+  <g id="node-adapters">
+    <rect x="236" y="238" width="156" height="82" rx="10" ry="10" fill="#edf8f5" stroke="#2a9d8f" stroke-width="2"/>
+    <text x="314" y="270" text-anchor="middle" class="node-title">Dataset Adapters</text>
+    <text x="314" y="294" text-anchor="middle" class="node-sub">adapters</text>
+  </g>
+
+  <g id="node-canonical">
+    <rect x="428" y="238" width="156" height="82" rx="10" ry="10" fill="#fff7e6" stroke="#d59a2d" stroke-width="2"/>
+    <text x="506" y="263" text-anchor="middle" class="node-title">Canonical</text>
+    <text x="506" y="282" text-anchor="middle" class="node-title">Schema-Call</text>
+    <text x="506" y="304" text-anchor="middle" class="node-sub">canonical records</text>
+  </g>
+
+  <g id="node-source">
+    <rect x="636" y="238" width="156" height="82" rx="10" ry="10" fill="#f4f4f4" stroke="#686868" stroke-width="2"/>
+    <text x="714" y="270" text-anchor="middle" class="node-title">Source Prior</text>
+    <text x="714" y="294" text-anchor="middle" class="node-sub">source LoRA</text>
+  </g>
+
+  <g id="node-projection">
+    <rect x="828" y="238" width="156" height="82" rx="10" ry="10" fill="#f3e8ff" stroke="#8e5ea2" stroke-width="2"/>
+    <text x="906" y="270" text-anchor="middle" class="node-title">LoRA Factor</text>
+    <text x="906" y="294" text-anchor="middle" class="node-sub">A-only / A+B / A-linear</text>
+  </g>
+
+  <g id="node-target">
+    <rect x="1020" y="238" width="156" height="82" rx="10" ry="10" fill="#f4f4f4" stroke="#686868" stroke-width="2"/>
+    <text x="1098" y="270" text-anchor="middle" class="node-title">Target Adapter</text>
+    <text x="1098" y="294" text-anchor="middle" class="node-sub">target LoRA</text>
+  </g>
+
+  <g id="node-eval">
+    <rect x="1228" y="238" width="156" height="82" rx="10" ry="10" fill="#eaf7ee" stroke="#4f9d69" stroke-width="2"/>
+    <text x="1306" y="270" text-anchor="middle" class="node-title">Unified Evaluation</text>
+    <text x="1306" y="294" text-anchor="middle" class="node-sub">Parsed / Tool / Arg</text>
+  </g>
+
+  <g id="node-diagnostics">
+    <rect x="1404" y="238" width="156" height="82" rx="10" ry="10" fill="#f8f0f0" stroke="#9b6a6c" stroke-width="2"/>
+    <text x="1482" y="270" text-anchor="middle" class="node-title">Diagnostics</text>
+    <text x="1482" y="294" text-anchor="middle" class="node-sub">mechanism / seed</text>
+  </g>
+
+  <!-- Main flow arrows -->
+  <path d="M200 279 L236 279" class="main-arrow"/>
+  <path d="M392 279 L428 279" class="main-arrow"/>
+  <path d="M584 279 L636 279" class="main-arrow"/>
+  <path d="M792 279 L828 279" class="main-arrow"/>
+  <path d="M984 279 L1020 279" class="main-arrow"/>
+  <path d="M1176 279 L1228 279" class="main-arrow"/>
+  <path d="M1384 279 L1404 279" class="main-arrow"/>
+
+  <!-- API-Bank secondary re-scoring path -->
+  <path d="M314 320 L314 446 L1306 446 L1306 320" class="api-path"/>
+  <text x="810" y="472" text-anchor="middle" class="path-label" fill="#9a5a19">API-Bank secondary re-scoring path</text>
+  <text x="810" y="494" text-anchor="middle" class="path-note" fill="#6c4318">best-effort schemas; saved predictions</text>
+
+  <!-- Diagnostics branch -->
+  <path d="M906 320 L906 365 L1482 365 L1482 320" class="diag-path"/>
+  <text x="1194" y="388" text-anchor="middle" class="path-label" fill="#67539b">Mechanism + seed diagnostics</text>
+
+  <!-- Scope note -->
+  <text x="800" y="575" text-anchor="middle" class="path-note" fill="#5a5a5a">Solid arrows show the main ToolBench transfer study; dashed paths mark secondary re-scoring and supporting diagnostics.</text>
+</svg>
